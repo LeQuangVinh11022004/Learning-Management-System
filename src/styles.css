@@ -77,6 +77,25 @@ body {
   font-weight: 600;
 }
 
+.welcome__login {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  margin-top: 28px;
+  padding: 0 18px;
+  border-radius: 10px;
+  background: #2563eb;
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background-color 150ms ease;
+}
+
+.welcome__login:hover {
+  background: #1d4ed8;
+}
+
 .welcome__indicator {
   width: 9px;
   height: 9px;

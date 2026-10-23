@@ -1,0 +1,254 @@
+.register-page {
+  display: grid;
+  min-height: 100vh;
+  padding: 24px;
+  place-items: center;
+  background:
+    radial-gradient(ellipse at 12% 10%, rgb(59 130 246 / 10%), transparent 34%),
+    radial-gradient(ellipse at 90% 90%, rgb(20 184 166 / 9%), transparent 32%),
+    #f8fafc;
+}
+
+.register-card {
+  width: min(100%, 700px);
+  padding: clamp(24px, 5vw, 44px);
+  border: 1px solid #e2e8f0;
+  border-radius: 24px;
+  background: #fff;
+  box-shadow: 0 24px 70px rgb(15 23 42 / 8%);
+}
+
+.register-card__back {
+  display: inline-block;
+  margin-bottom: 26px;
+  color: #475569;
+  font-size: 0.9rem;
+  text-decoration: none;
+}
+
+.register-card__back:hover {
+  color: #1d4ed8;
+}
+
+.register-card__eyebrow {
+  margin: 0 0 10px;
+  color: #2563eb;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.register-card h1 {
+  margin: 0;
+  color: #172033;
+  font-size: clamp(1.8rem, 5vw, 2.3rem);
+  letter-spacing: -0.04em;
+}
+
+.register-card__description {
+  margin: 10px 0 26px;
+  color: #64748b;
+  line-height: 1.6;
+}
+
+.register-form {
+  display: grid;
+  gap: 18px;
+}
+
+.register-form__row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.register-form__field {
+  display: grid;
+  min-width: 0;
+  gap: 7px;
+  color: #334155;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.register-form__field input,
+.register-form__field select,
+.register-certificates input {
+  width: 100%;
+  min-height: 46px;
+  padding: 0 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 9px;
+  background: #fff;
+  color: #172033;
+  font: inherit;
+  font-weight: 400;
+}
+
+.register-form__field input:focus,
+.register-form__field select:focus,
+.register-certificates input:focus {
+  border-color: #2563eb;
+  outline: 3px solid rgb(37 99 235 / 14%);
+}
+
+.register-certificates {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 16px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+}
+
+.register-certificates legend {
+  padding: 0 6px;
+  color: #334155;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.register-certificates__row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.register-certificates__remove,
+.register-certificates__add,
+.register-verification__resend {
+  width: fit-content;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 8px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.register-certificates__remove:hover,
+.register-certificates__add:hover,
+.register-verification__resend:hover:not(:disabled) {
+  background: #dbeafe;
+}
+
+.register-form__error,
+.register-form__feedback {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.register-form__error {
+  color: #b91c1c;
+}
+
+.register-form__feedback {
+  color: #047857;
+}
+
+.register-form__submit {
+  min-height: 48px;
+  border: 0;
+  border-radius: 10px;
+  background: #2563eb;
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+  transition: background-color 150ms ease;
+}
+
+.register-form__submit:hover:not(:disabled) {
+  background: #1d4ed8;
+}
+
+.register-form__submit:disabled,
+.register-verification__resend:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.register-card__note {
+  margin: 22px 0 0;
+  color: #64748b;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.register-card__note a {
+  color: #1d4ed8;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.register-card__note a:hover {
+  text-decoration: underline;
+}
+
+.register-overlay {
+  position: fixed;
+  z-index: 10;
+  display: grid;
+  padding: 20px;
+  background: rgb(15 23 42 / 55%);
+  inset: 0;
+  place-items: center;
+}
+
+.register-verification {
+  position: relative;
+  width: min(100%, 440px);
+  padding: 32px;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 24px 70px rgb(15 23 42 / 24%);
+}
+
+.register-verification__close {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 50%;
+  background: #f1f5f9;
+  color: #334155;
+  cursor: pointer;
+  font-size: 1.4rem;
+}
+
+.register-verification h2 {
+  margin: 0;
+  color: #172033;
+  font-size: 1.6rem;
+}
+
+.register-verification > p:not(.register-card__eyebrow) {
+  color: #64748b;
+  line-height: 1.5;
+}
+
+.register-verification__timer {
+  color: #b91c1c !important;
+  font-weight: 600;
+}
+
+.register-verification__resend {
+  margin-top: 14px;
+}
+
+@media (max-width: 560px) {
+  .register-form__row {
+    grid-template-columns: 1fr;
+  }
+
+  .register-verification {
+    padding: 26px 22px;
+  }
+}
