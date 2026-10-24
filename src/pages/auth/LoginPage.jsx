@@ -1,25 +1,8 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { loginUser } from "../../api/authApi.js";
+import { getApiErrorMessage } from "../../utils/getApiErrorMessage.js";
 import "./LoginPage.css";
-
-function getErrorMessage(error) {
-  const responseData = error?.response?.data;
-
-  if (typeof responseData?.Errors === "string") {
-    return responseData.Errors;
-  }
-
-  if (typeof responseData?.Message === "string") {
-    return responseData.Message;
-  }
-
-  if (error instanceof Error && error.message) {
-    return error.message;
-  }
-
-  return "Đăng nhập thất bại. Vui lòng thử lại.";
-}
 
 function LoginPage() {
   const navigate = useNavigate();
@@ -51,7 +34,9 @@ function LoginPage() {
       window.localStorage.setItem("refreshToken", tokens.refreshToken);
       navigate("/", { replace: true });
     } catch (error) {
-      setErrorMessage(getErrorMessage(error));
+      setErrorMessage(
+        getApiErrorMessage(error, "Đăng nhập thất bại. Vui lòng thử lại."),
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -117,6 +102,9 @@ function LoginPage() {
           </button>
         </form>
 
+        <p className="login-card__note">
+          <Link to="/forgot-password">Quên mật khẩu?</Link>
+        </p>
         <p className="login-card__note">
           Chưa có tài khoản? <Link to="/register">Đăng ký</Link>
         </p>

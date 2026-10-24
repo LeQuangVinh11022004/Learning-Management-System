@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { registerUser, sendOTP, verifyOtp } from "../../api/authApi.js";
+import { getApiErrorMessage } from "../../utils/getApiErrorMessage.js";
 import "./RegisterPage.css";
 
 const INITIAL_FORM = {
@@ -15,33 +16,6 @@ const INITIAL_FORM = {
   dob: "",
   certificates: [""],
 };
-
-function getErrorMessage(error) {
-  const responseData = error?.response?.data;
-  const errors = responseData?.errors ?? responseData?.Errors;
-
-  if (Array.isArray(errors)) {
-    return errors.join(", ");
-  }
-
-  if (typeof errors === "string") {
-    return errors;
-  }
-
-  if (typeof responseData?.message === "string") {
-    return responseData.message;
-  }
-
-  if (typeof responseData?.Message === "string") {
-    return responseData.Message;
-  }
-
-  if (error instanceof Error && error.message) {
-    return error.message;
-  }
-
-  return "Đã xảy ra lỗi. Vui lòng thử lại.";
-}
 
 function getAdultDateLimit() {
   const date = new Date();
@@ -254,7 +228,7 @@ function RegisterPage() {
       setVerificationFeedback({ text: "", type: "" });
       setFeedback("Tạo tài khoản thành công. Vui lòng xác minh email.");
     } catch (error) {
-      setFeedback(getErrorMessage(error));
+      setFeedback(getApiErrorMessage(error, "Đã xảy ra lỗi. Vui lòng thử lại."));
     } finally {
       setIsSubmitting(false);
     }
@@ -280,7 +254,7 @@ function RegisterPage() {
       navigate("/login", { replace: true });
     } catch (error) {
       setVerificationFeedback({
-        text: getErrorMessage(error),
+        text: getApiErrorMessage(error, "Không thể xác minh mã OTP."),
         type: "error",
       });
     } finally {
@@ -302,7 +276,7 @@ function RegisterPage() {
       });
     } catch (error) {
       setVerificationFeedback({
-        text: getErrorMessage(error),
+        text: getApiErrorMessage(error, "Không thể gửi lại mã OTP."),
         type: "error",
       });
     } finally {

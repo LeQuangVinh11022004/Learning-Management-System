@@ -131,6 +131,17 @@
   opacity: 0.7;
 }
 
+.login-form__submit-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.login-form__submit-link:hover {
+  color: #fff;
+}
+
 .login-card__note {
   margin: 24px 0 0;
   color: #64748b;
