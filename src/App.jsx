@@ -3,6 +3,8 @@ import LoginPage from "./pages/auth/LoginPage.jsx";
 import RegisterPage from "./pages/auth/RegisterPage.jsx";
 import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage.jsx";
 import ResetPasswordPage from "./pages/auth/ResetPasswordPage.jsx";
+import CourseCatalogPage from "./pages/courses/CourseCatalogPage.jsx";
+import CourseDetailPage from "./pages/courses/CourseDetailPage.jsx";
 
 function App() {
   return (
@@ -30,6 +32,9 @@ function App() {
                   <span className="welcome__indicator" aria-hidden="true" />
                   <span>Nền tảng ứng dụng đã sẵn sàng</span>
                 </div>
+                <Link className="welcome__login" to="/courses">
+                  Khám phá khóa học
+                </Link>
                 <Link className="welcome__login" to="/login">
                   Đăng nhập
                 </Link>
@@ -41,6 +46,8 @@ function App() {
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
+        <Route path="/courses" element={<CourseCatalogPage />} />
+        <Route path="/course-detail/:id" element={<CourseDetailPage />} />
       </Routes>
     </BrowserRouter>
   );
