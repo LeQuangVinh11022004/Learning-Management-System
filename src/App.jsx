@@ -5,6 +5,8 @@ import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage.jsx";
 import ResetPasswordPage from "./pages/auth/ResetPasswordPage.jsx";
 import CourseCatalogPage from "./pages/courses/CourseCatalogPage.jsx";
 import CourseDetailPage from "./pages/courses/CourseDetailPage.jsx";
+import WishlistPage from "./pages/student/WishlistPage.jsx";
+import CartPage from "./pages/student/CartPage.jsx";
 
 function App() {
   return (
@@ -48,6 +50,8 @@ function App() {
         <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/courses" element={<CourseCatalogPage />} />
         <Route path="/course-detail/:id" element={<CourseDetailPage />} />
+        <Route path="/wishlist" element={<WishlistPage />} />
+        <Route path="/cart" element={<CartPage />} />
       </Routes>
     </BrowserRouter>
   );

@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { fetchCourseById } from "../../api/courseApi.js";
+import {
+  addBookmark,
+  addCourseToCart,
+} from "../../api/studentLibraryApi.js";
 import { getApiErrorMessage } from "../../utils/getApiErrorMessage.js";
 import "./CoursePages.css";
 
@@ -16,11 +20,15 @@ function formatPrice(value) {
 }
 
 function CourseDetailPage() {
+  const navigate = useNavigate();
   const { id } = useParams();
   const [course, setCourse] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
   const [activeTab, setActiveTab] = useState("overview");
+  const [actionMessage, setActionMessage] = useState("");
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const [isSavingBookmark, setIsSavingBookmark] = useState(false);
 
   useEffect(() => {
     let isCurrent = true;
@@ -65,6 +73,35 @@ function CourseDetailPage() {
     ? `${course.author.firstName ?? ""} ${course.author.lastName ?? ""}`.trim()
     : "Giảng viên LMS";
 
+  async function handleStudentAction(action) {
+    setActionMessage("");
+
+    if (!window.localStorage.getItem("accessToken")) {
+      navigate("/login");
+      return;
+    }
+
+    const setPending =
+      action === "bookmark" ? setIsSavingBookmark : setIsAddingToCart;
+    setPending(true);
+
+    try {
+      if (action === "bookmark") {
+        await addBookmark(course.id ?? course._id);
+        setActionMessage("Đã thêm khóa học vào danh sách yêu thích.");
+      } else {
+        await addCourseToCart(course.id ?? course._id);
+        setActionMessage("Đã thêm khóa học vào giỏ hàng.");
+      }
+    } catch (error) {
+      setActionMessage(
+        getApiErrorMessage(error, "Không thể thực hiện thao tác. Vui lòng thử lại."),
+      );
+    } finally {
+      setPending(false);
+    }
+  }
+
   return (
     <main className="course-page">
       <header className="course-page__header">
@@ -73,6 +110,8 @@ function CourseDetailPage() {
         </Link>
         <nav aria-label="Điều hướng chính" className="course-page__nav">
           <Link to="/courses">Khóa học</Link>
+          <Link to="/wishlist">Yêu thích</Link>
+          <Link to="/cart">Giỏ hàng</Link>
           <Link to="/login">Đăng nhập</Link>
         </nav>
       </header>
@@ -219,11 +258,31 @@ function CourseDetailPage() {
                 <p className="course-purchase__label">Học phí</p>
                 <p className="course-purchase__price">{formatPrice(price)}</p>
                 <p>{sections.length} phần · {lessons.length} bài học</p>
-                <Link className="course-purchase__button" to="/login">
-                  Đăng nhập để đăng ký
-                </Link>
+                <button
+                  className="course-purchase__button"
+                  disabled={isAddingToCart}
+                  onClick={() => handleStudentAction("cart")}
+                  type="button"
+                >
+                  {isAddingToCart ? "Đang thêm..." : "Thêm vào giỏ hàng"}
+                </button>
+                <button
+                  className="course-purchase__secondary"
+                  disabled={isSavingBookmark}
+                  onClick={() => handleStudentAction("bookmark")}
+                  type="button"
+                >
+                  {isSavingBookmark
+                    ? "Đang lưu..."
+                    : "Thêm vào yêu thích"}
+                </button>
+                {actionMessage && (
+                  <p aria-live="polite" className="course-action-message" role="status">
+                    {actionMessage}
+                  </p>
+                )}
                 <p className="course-purchase__note">
-                  Đăng nhập bằng tài khoản học viên để tiếp tục.
+                  Đăng nhập bằng tài khoản học viên để lưu khóa học hoặc tiếp tục.
                 </p>
               </aside>
             </section>

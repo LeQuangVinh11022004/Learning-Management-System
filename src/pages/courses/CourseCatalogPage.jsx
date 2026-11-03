@@ -1,6 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { fetchCourses } from "../../api/courseApi.js";
+import {
+  addBookmark,
+  addCourseToCart,
+} from "../../api/studentLibraryApi.js";
 import { getApiErrorMessage } from "../../utils/getApiErrorMessage.js";
 import "./CoursePages.css";
 
@@ -18,12 +22,15 @@ function formatPrice(value) {
 }
 
 function CourseCatalogPage() {
+  const navigate = useNavigate();
   const [courses, setCourses] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [page, setPage] = useState(1);
+  const [actionCourseId, setActionCourseId] = useState(null);
+  const [actionMessage, setActionMessage] = useState("");
 
   useEffect(() => {
     let isCurrent = true;
@@ -111,6 +118,33 @@ function CourseCatalogPage() {
     setPage(1);
   }
 
+  async function handleStudentAction(action, courseId) {
+    setActionMessage("");
+
+    if (!window.localStorage.getItem("accessToken")) {
+      navigate("/login");
+      return;
+    }
+
+    setActionCourseId(courseId);
+
+    try {
+      if (action === "bookmark") {
+        await addBookmark(courseId);
+        setActionMessage("Đã thêm khóa học vào danh sách yêu thích.");
+      } else {
+        await addCourseToCart(courseId);
+        setActionMessage("Đã thêm khóa học vào giỏ hàng.");
+      }
+    } catch (error) {
+      setActionMessage(
+        getApiErrorMessage(error, "Không thể thực hiện thao tác. Vui lòng thử lại."),
+      );
+    } finally {
+      setActionCourseId(null);
+    }
+  }
+
   return (
     <main className="course-page">
       <header className="course-page__header">
@@ -121,6 +155,8 @@ function CourseCatalogPage() {
           <Link aria-current="page" to="/courses">
             Khóa học
           </Link>
+          <Link to="/wishlist">Yêu thích</Link>
+          <Link to="/cart">Giỏ hàng</Link>
           <Link to="/login">Đăng nhập</Link>
         </nav>
       </header>
@@ -157,6 +193,12 @@ function CourseCatalogPage() {
             {filteredCourses.length} khóa học
           </p>
         </div>
+
+        {actionMessage && (
+          <p aria-live="polite" className="course-action-message" role="status">
+            {actionMessage}
+          </p>
+        )}
 
         {isLoading ? (
           <p aria-live="polite" className="course-state">
@@ -231,6 +273,26 @@ function CourseCatalogPage() {
                             : "Giảng viên"}
                         </span>
                         <strong>{formatPrice(price)}</strong>
+                      </div>
+                      <div className="course-card__actions">
+                        <button
+                          disabled={actionCourseId === course.id}
+                          onClick={() =>
+                            handleStudentAction("bookmark", course.id)
+                          }
+                          type="button"
+                        >
+                          Yêu thích
+                        </button>
+                        <button
+                          disabled={actionCourseId === course.id}
+                          onClick={() => handleStudentAction("cart", course.id)}
+                          type="button"
+                        >
+                          {actionCourseId === course.id
+                            ? "Đang thêm..."
+                            : "Thêm vào giỏ"}
+                        </button>
                       </div>
                     </div>
                   </article>

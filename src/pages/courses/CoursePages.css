@@ -244,6 +244,48 @@
   font-size: 0.95rem;
 }
 
+.course-card__actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.course-card__actions button {
+  flex: 1;
+  min-height: 38px;
+  padding: 0 8px;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.course-card__actions button:last-child {
+  border-color: #2563eb;
+  background: #2563eb;
+  color: #fff;
+}
+
+.course-card__actions button:hover:not(:disabled) {
+  filter: brightness(0.96);
+}
+
+.course-card__actions button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.course-action-message {
+  margin: 0;
+  color: #047857;
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
 .course-state {
   padding: 52px 20px;
   color: #64748b;
@@ -474,11 +516,44 @@
   font-size: 0.9rem;
   font-weight: 700;
   text-align: center;
-  text-decoration: none;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
 }
 
 .course-purchase__button:hover {
   background: #1d4ed8;
+}
+
+.course-purchase__button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.course-purchase__secondary {
+  display: flex;
+  width: 100%;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  margin-top: 10px;
+  border: 1px solid #bfdbfe;
+  border-radius: 9px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.course-purchase__secondary:hover:not(:disabled) {
+  background: #dbeafe;
+}
+
+.course-purchase__secondary:disabled {
+  cursor: wait;
+  opacity: 0.65;
 }
 
 .course-purchase__note {
