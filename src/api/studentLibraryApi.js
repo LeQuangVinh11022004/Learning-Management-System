@@ -47,3 +47,19 @@ export async function addCourseToCart(courseId) {
 export async function removeCourseFromCart(courseId) {
   await api.delete("/cart", { data: { courseID: courseId } });
 }
+
+export async function fetchCurrentUser() {
+  const response = await api.get("/users/me");
+  const user = response.data?.data ?? response.data;
+
+  if (!user || typeof user !== "object" || Array.isArray(user)) {
+    throw new Error("Dữ liệu tài khoản từ máy chủ không hợp lệ.");
+  }
+
+  return user;
+}
+
+export async function checkoutWithWallet(balance) {
+  const response = await api.post("/orders/checkout", { balance });
+  return response.data;
+}

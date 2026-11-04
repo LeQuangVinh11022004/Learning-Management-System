@@ -208,8 +208,8 @@ function CartPage() {
                 <span>Tổng cộng</span>
                 <strong>{formatPrice(total)}</strong>
               </div>
-              <Link className="library-primary-link" to="/login">
-                Đăng nhập để thanh toán
+              <Link className="library-primary-link" to="/checkout">
+                Tiếp tục thanh toán
               </Link>
               <p>
                 Bạn cần đăng nhập bằng tài khoản học viên trước khi thanh toán.

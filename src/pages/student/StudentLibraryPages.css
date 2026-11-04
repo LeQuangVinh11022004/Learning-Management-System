@@ -436,6 +436,144 @@
   text-align: center;
 }
 
+.checkout-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  align-items: start;
+  gap: 24px;
+}
+
+.checkout-courses {
+  padding: 22px;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  background: #fff;
+}
+
+.checkout-courses h2 {
+  margin: 0 0 18px;
+  color: #172033;
+  font-size: 1.15rem;
+}
+
+.checkout-courses ul {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.checkout-courses li {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 16px 0;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.checkout-courses li:first-child {
+  padding-top: 0;
+}
+
+.checkout-courses li:last-child {
+  border-bottom: 0;
+}
+
+.checkout-courses li > div {
+  display: grid;
+  gap: 5px;
+}
+
+.checkout-courses li > div strong {
+  color: #172033;
+  font-size: 0.94rem;
+}
+
+.checkout-courses li > div span {
+  color: #64748b;
+  font-size: 0.8rem;
+}
+
+.checkout-courses li > strong {
+  color: #1d4ed8;
+  font-size: 0.9rem;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.checkout-edit-link {
+  display: inline-block;
+  margin-top: 14px;
+  color: #1d4ed8;
+  font-size: 0.88rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.checkout-edit-link:hover {
+  text-decoration: underline;
+}
+
+.checkout-summary {
+  position: static;
+}
+
+.checkout-summary__warning {
+  margin: 0 0 14px !important;
+  color: #b91c1c !important;
+  font-size: 0.82rem !important;
+  line-height: 1.5;
+  text-align: left !important;
+}
+
+.checkout-summary__submit {
+  width: 100%;
+}
+
+.checkout-summary__submit:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.checkout-complete {
+  width: min(100%, 680px);
+  margin: 50px auto;
+  padding: clamp(28px, 6vw, 56px);
+  border: 1px solid #d1fae5;
+  border-radius: 18px;
+  background: #fff;
+  text-align: center;
+  box-shadow: 0 12px 38px rgb(15 23 42 / 6%);
+}
+
+.checkout-complete__icon {
+  display: grid;
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 20px;
+  border-radius: 50%;
+  background: #d1fae5;
+  color: #047857;
+  font-size: 1.8rem;
+  font-weight: 700;
+  place-items: center;
+}
+
+.checkout-complete h1 {
+  margin: 0;
+  color: #172033;
+  font-size: clamp(1.7rem, 5vw, 2.4rem);
+  letter-spacing: -0.04em;
+}
+
+.checkout-complete > p:not(.library-eyebrow) {
+  margin: 14px 0 22px;
+  color: #64748b;
+  line-height: 1.6;
+}
+
 .visually-hidden {
   position: absolute;
   width: 1px;
@@ -486,6 +624,10 @@
   }
 
   .cart-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .checkout-layout {
     grid-template-columns: 1fr;
   }
 
