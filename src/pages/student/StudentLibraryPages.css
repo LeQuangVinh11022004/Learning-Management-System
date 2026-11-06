@@ -100,6 +100,11 @@
   margin-bottom: 24px;
 }
 
+.library-toolbar--single {
+  grid-template-columns: minmax(0, 1fr);
+  max-width: 520px;
+}
+
 .library-toolbar input,
 .library-toolbar select {
   width: 100%;
@@ -245,6 +250,32 @@
 .cart-item__remove:disabled {
   cursor: wait;
   opacity: 0.6;
+}
+
+.enrolled-course-card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: auto;
+  padding-top: 14px;
+  border-top: 1px solid #f1f5f9;
+  font-size: 0.82rem;
+}
+
+.enrolled-course-card__footer span {
+  color: #047857;
+  font-weight: 600;
+}
+
+.enrolled-course-card__footer a {
+  color: #1d4ed8;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.enrolled-course-card__footer a:hover {
+  text-decoration: underline;
 }
 
 .library-state,

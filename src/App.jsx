@@ -8,6 +8,7 @@ import CourseDetailPage from "./pages/courses/CourseDetailPage.jsx";
 import WishlistPage from "./pages/student/WishlistPage.jsx";
 import CartPage from "./pages/student/CartPage.jsx";
 import CheckoutPage from "./pages/student/CheckoutPage.jsx";
+import EnrolledCoursesPage from "./pages/student/EnrolledCoursesPage.jsx";
 
 function App() {
   return (
@@ -54,6 +55,7 @@ function App() {
         <Route path="/wishlist" element={<WishlistPage />} />
         <Route path="/cart" element={<CartPage />} />
         <Route path="/checkout" element={<CheckoutPage />} />
+        <Route path="/my-courses" element={<EnrolledCoursesPage />} />
       </Routes>
     </BrowserRouter>
   );

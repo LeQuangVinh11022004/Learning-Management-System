@@ -63,3 +63,29 @@ export async function checkoutWithWallet(balance) {
   const response = await api.post("/orders/checkout", { balance });
   return response.data;
 }
+
+export async function fetchEnrolledCourses() {
+  const enrolledCourses = [];
+  let page = 1;
+  let totalPages = 1;
+
+  do {
+    const response = await api.get("/enrolls/enrolled-by-user", {
+      params: { page },
+    });
+    const payload = response.data?.data ?? response.data;
+    const results = payload?.results;
+
+    if (!Array.isArray(results)) {
+      throw new Error("Dữ liệu khóa học đã đăng ký từ máy chủ không hợp lệ.");
+    }
+
+    enrolledCourses.push(...results);
+    totalPages = Number.isInteger(payload.totalPages)
+      ? Math.max(payload.totalPages, 1)
+      : 1;
+    page += 1;
+  } while (page <= totalPages);
+
+  return enrolledCourses;
+}

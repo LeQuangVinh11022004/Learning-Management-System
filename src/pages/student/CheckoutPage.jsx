@@ -119,6 +119,7 @@ function CheckoutPage() {
         </Link>
         <nav aria-label="Điều hướng chính" className="library-header__nav">
           <Link to="/courses">Khóa học</Link>
+          <Link to="/my-courses">Khóa học của tôi</Link>
           <Link to="/wishlist">Yêu thích</Link>
           <Link to="/cart">Giỏ hàng</Link>
         </nav>
@@ -152,11 +153,9 @@ function CheckoutPage() {
             <h1 id="checkout-complete-title">
               Bạn đã đăng ký khóa học thành công
             </h1>
-            <p>
-              Các khóa học đã thanh toán sẽ có trong khu vực học tập của bạn.
-            </p>
-            <Link className="library-primary-link" to="/courses">
-              Tiếp tục khám phá
+            <p>Truy cập khu vực học tập để tiếp tục với khóa học của bạn.</p>
+            <Link className="library-primary-link" to="/my-courses">
+              Xem khóa học của tôi
             </Link>
           </section>
         ) : courses.length === 0 ? (
