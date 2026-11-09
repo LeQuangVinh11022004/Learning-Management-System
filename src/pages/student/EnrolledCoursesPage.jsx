@@ -190,9 +190,9 @@ function EnrolledCoursesPage() {
                       <div className="enrolled-course-card__footer">
                         <span>Đã đăng ký</span>
                         <Link
-                          to={`/course-detail/${encodeURIComponent(courseId)}`}
+                          to={`/course-lesson/${encodeURIComponent(courseId)}`}
                         >
-                          Xem khóa học →
+                          Vào học →
                         </Link>
                       </div>
                     </div>
