@@ -6,6 +6,7 @@ import {
   addCourseToCart,
 } from "../../api/studentLibraryApi.js";
 import { getApiErrorMessage } from "../../utils/getApiErrorMessage.js";
+import CourseReviews from "./CourseReviews.jsx";
 import "./CoursePages.css";
 
 function formatPrice(value) {
@@ -188,9 +189,30 @@ function CourseDetailPage() {
                   >
                     Giáo trình ({lessons.length})
                   </button>
+                  <button
+                    aria-selected={activeTab === "reviews"}
+                    className={activeTab === "reviews" ? "is-active" : ""}
+                    id="course-reviews-tab"
+                    onClick={() => setActiveTab("reviews")}
+                    role="tab"
+                    type="button"
+                  >
+                    Đánh giá
+                  </button>
                 </div>
 
-                {activeTab === "overview" ? (
+                {activeTab === "reviews" ? (
+                  <section
+                    aria-labelledby="course-reviews-tab"
+                    className="course-detail__panel"
+                    role="tabpanel"
+                  >
+                    <CourseReviews
+                      courseId={course.id ?? course._id}
+                      courseRating={course.ratingsAverage}
+                    />
+                  </section>
+                ) : activeTab === "overview" ? (
                   <section
                     aria-labelledby="course-overview-tab"
                     className="course-detail__panel"

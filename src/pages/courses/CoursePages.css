@@ -388,6 +388,151 @@
   font-weight: 700;
 }
 
+.course-reviews__summary {
+  display: grid;
+  grid-template-columns: minmax(140px, 0.6fr) minmax(0, 1.4fr);
+  gap: 30px;
+  align-items: center;
+  padding: 22px;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  background: #f8fafc;
+}
+
+.course-reviews__score {
+  display: grid;
+  justify-items: center;
+  gap: 5px;
+}
+
+.course-reviews__score strong {
+  color: #172033;
+  font-size: 3rem;
+  line-height: 1;
+}
+
+.course-reviews__score > span,
+.course-review__stars {
+  color: #e9a008;
+  letter-spacing: 0.08em;
+}
+
+.course-reviews__score small {
+  color: #64748b;
+}
+
+.course-reviews__distribution {
+  display: grid;
+  gap: 9px;
+}
+
+.course-reviews__rating-row {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) 28px;
+  gap: 10px;
+  align-items: center;
+  color: #475569;
+  font-size: 0.85rem;
+}
+
+.course-reviews__bar {
+  height: 9px;
+  overflow: hidden;
+  border-radius: 99px;
+  background: #e2e8f0;
+}
+
+.course-reviews__bar span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: #e9a008;
+}
+
+.course-reviews__heading {
+  margin: 30px 0 16px;
+  color: #172033;
+  font-size: 1.25rem;
+}
+
+.course-reviews__list {
+  display: grid;
+}
+
+.course-review {
+  display: grid;
+  grid-template-columns: 46px minmax(0, 1fr);
+  gap: 14px;
+  padding: 18px 0;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.course-review__avatar {
+  display: grid;
+  width: 46px;
+  height: 46px;
+  overflow: hidden;
+  border-radius: 50%;
+  background: #dbeafe;
+  color: #1d4ed8;
+  font-size: 1.1rem;
+  font-weight: 700;
+  place-items: center;
+}
+
+.course-review__avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.course-review__byline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  align-items: baseline;
+}
+
+.course-review__byline h3 {
+  margin: 0;
+  color: #172033;
+  font-size: 1rem;
+}
+
+.course-review__byline time {
+  color: #64748b;
+  font-size: 0.82rem;
+}
+
+.course-review__stars {
+  margin: 5px 0;
+}
+
+.course-review__stars span {
+  color: #cbd5e1;
+}
+
+.course-review__comment,
+.course-reviews__state {
+  margin: 8px 0 0;
+  color: #475569;
+  line-height: 1.6;
+}
+
+.course-reviews__state--error {
+  color: #b91c1c;
+}
+
+@media (max-width: 600px) {
+  .course-reviews__summary {
+    grid-template-columns: 1fr;
+  }
+
+  .course-reviews__distribution {
+    width: 100%;
+  }
+}
+
 .course-detail__layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 300px;

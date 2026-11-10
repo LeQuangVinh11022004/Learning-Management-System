@@ -47,3 +47,17 @@ export async function fetchCourseById(courseId) {
 
   return course;
 }
+
+export async function fetchCourseReviews(courseId) {
+  const response = await api.get(
+    `/reviews/course/${encodeURIComponent(courseId)}`,
+  );
+  const payload = response.data?.data ?? response.data;
+  const reviews = Array.isArray(payload) ? payload : payload?.reviews;
+
+  if (!Array.isArray(reviews)) {
+    throw new Error("Dữ liệu đánh giá từ máy chủ không hợp lệ.");
+  }
+
+  return reviews;
+}
