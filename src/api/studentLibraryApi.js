@@ -59,6 +59,18 @@ export async function fetchCurrentUser() {
   return user;
 }
 
+export async function updateCurrentUserProfile(userId, profile) {
+  if (!userId) {
+    throw new Error("Không tìm thấy mã tài khoản để cập nhật hồ sơ.");
+  }
+
+  const response = await api.patch(
+    `/users/${encodeURIComponent(userId)}/profile`,
+    profile,
+  );
+  return response.data?.data ?? response.data;
+}
+
 export async function checkoutWithWallet(balance) {
   const response = await api.post("/orders/checkout", { balance });
   return response.data;

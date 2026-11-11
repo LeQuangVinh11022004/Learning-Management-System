@@ -96,6 +96,7 @@ function CartPage() {
         <nav aria-label="Điều hướng chính" className="library-header__nav">
           <Link to="/courses">Khóa học</Link>
           <Link to="/my-courses">Khóa học của tôi</Link>
+          <Link to="/profile">Tài khoản</Link>
           <Link to="/wishlist">Yêu thích</Link>
           <Link aria-current="page" to="/cart">
             Giỏ hàng

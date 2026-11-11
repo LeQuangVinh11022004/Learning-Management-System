@@ -109,6 +109,7 @@ function WishlistPage() {
         <nav aria-label="Điều hướng chính" className="library-header__nav">
           <Link to="/courses">Khóa học</Link>
           <Link to="/my-courses">Khóa học của tôi</Link>
+          <Link to="/profile">Tài khoản</Link>
           <Link aria-current="page" to="/wishlist">
             Yêu thích
           </Link>

@@ -81,6 +81,7 @@ function EnrolledCoursesPage() {
           <Link aria-current="page" to="/my-courses">
             Khóa học của tôi
           </Link>
+          <Link to="/profile">Tài khoản</Link>
           <Link to="/wishlist">Yêu thích</Link>
           <Link to="/cart">Giỏ hàng</Link>
         </nav>
