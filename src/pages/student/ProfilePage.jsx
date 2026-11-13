@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   fetchCurrentUser,
+  uploadCurrentUserAvatar,
   updateCurrentUserProfile,
 } from "../../api/studentLibraryApi.js";
 import { getApiErrorMessage } from "../../utils/getApiErrorMessage.js";
@@ -34,10 +35,12 @@ function getProfileForm(user) {
 
 function ProfilePage() {
   const navigate = useNavigate();
+  const avatarInputRef = useRef(null);
   const [user, setUser] = useState(null);
   const [form, setForm] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
@@ -71,6 +74,40 @@ function ProfilePage() {
     const { name, value } = event.target;
     setForm((current) => ({ ...current, [name]: value }));
     setSuccessMessage("");
+  }
+
+  async function handleAvatarChange(event) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+
+    if (!file.name.toLowerCase().endsWith(".jpg")) {
+      setErrorMessage("Ảnh đại diện phải có định dạng .jpg.");
+      setSuccessMessage("");
+      return;
+    }
+
+    setErrorMessage("");
+    setSuccessMessage("");
+    setIsUploadingAvatar(true);
+
+    try {
+      const avatarUrl = await uploadCurrentUserAvatar(file);
+      const refreshedUrl = new URL(avatarUrl, window.location.origin);
+      if (!["http:", "https:"].includes(refreshedUrl.protocol)) {
+        throw new Error("Máy chủ trả về đường dẫn ảnh không an toàn.");
+      }
+
+      refreshedUrl.searchParams.set("t", String(Date.now()));
+      setUser((current) => ({ ...current, avatar: refreshedUrl.toString() }));
+      setSuccessMessage("Ảnh đại diện đã được cập nhật.");
+    } catch (error) {
+      setErrorMessage(
+        getApiErrorMessage(error, "Không thể cập nhật ảnh đại diện."),
+      );
+    } finally {
+      setIsUploadingAvatar(false);
+    }
   }
 
   async function handleSubmit(event) {
@@ -157,14 +194,32 @@ function ProfilePage() {
         ) : user && form ? (
           <form className="profile-form" onSubmit={handleSubmit}>
             <div className="profile-form__identity">
-              <div aria-hidden="true" className="profile-form__avatar">
-                {user.avatar ? (
-                  <img alt="" src={user.avatar} />
-                ) : (
-                  `${form.firstName.charAt(0)}${form.lastName.charAt(0)}`
-                    .trim()
-                    .toLocaleUpperCase("vi") || "L"
-                )}
+              <div className="profile-form__avatar-wrap">
+                <div aria-hidden="true" className="profile-form__avatar">
+                  {user.avatar ? (
+                    <img alt="" src={user.avatar} />
+                  ) : (
+                    `${form.firstName.charAt(0)}${form.lastName.charAt(0)}`
+                      .trim()
+                      .toLocaleUpperCase("vi") || "L"
+                  )}
+                </div>
+                <input
+                  accept=".jpg,image/jpeg"
+                  aria-label="Chọn ảnh đại diện JPG"
+                  className="visually-hidden"
+                  onChange={handleAvatarChange}
+                  ref={avatarInputRef}
+                  type="file"
+                />
+                <button
+                  className="profile-form__avatar-button"
+                  disabled={isUploadingAvatar}
+                  onClick={() => avatarInputRef.current?.click()}
+                  type="button"
+                >
+                  {isUploadingAvatar ? "Đang tải ảnh..." : "Đổi ảnh"}
+                </button>
               </div>
               <div>
                 <h2>

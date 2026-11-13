@@ -71,6 +71,20 @@ export async function updateCurrentUserProfile(userId, profile) {
   return response.data?.data ?? response.data;
 }
 
+export async function uploadCurrentUserAvatar(file) {
+  const formData = new FormData();
+  formData.append("image", file);
+
+  const response = await api.patch("/users/me/avatar", formData);
+  const avatarUrl = response.data?.data ?? response.data;
+
+  if (typeof avatarUrl !== "string" || !avatarUrl.trim()) {
+    throw new Error("Máy chủ không trả về đường dẫn ảnh đại diện hợp lệ.");
+  }
+
+  return avatarUrl;
+}
+
 export async function checkoutWithWallet(balance) {
   const response = await api.post("/orders/checkout", { balance });
   return response.data;
