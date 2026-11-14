@@ -148,6 +148,7 @@ function ProfilePage() {
         <nav aria-label="Điều hướng chính" className="library-header__nav">
           <Link to="/courses">Khóa học</Link>
           <Link to="/my-courses">Khóa học của tôi</Link>
+          <Link to="/my-reviews">Đánh giá của tôi</Link>
           <Link to="/wishlist">Yêu thích</Link>
           <Link to="/cart">Giỏ hàng</Link>
           <Link aria-current="page" to="/profile">

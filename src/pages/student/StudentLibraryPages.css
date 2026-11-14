@@ -289,6 +289,220 @@
   color: #047857;
 }
 
+.my-reviews__filter {
+  max-width: 260px;
+}
+
+.my-reviews__filter label {
+  display: grid;
+  gap: 8px;
+  color: #334155;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.my-reviews__list {
+  display: grid;
+  gap: 18px;
+}
+
+.my-review-card {
+  padding: clamp(18px, 3vw, 26px);
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 8px 26px rgb(15 23 42 / 4%);
+}
+
+.my-review-card__course {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  padding-bottom: 18px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.my-review-card__course > img,
+.my-review-card__course > span {
+  display: grid;
+  width: 76px;
+  height: 64px;
+  flex: 0 0 76px;
+  overflow: hidden;
+  border-radius: 9px;
+  background: #dbeafe;
+  color: #1d4ed8;
+  font-weight: 800;
+  object-fit: cover;
+  place-items: center;
+}
+
+.my-review-card__course .library-course-card__category {
+  margin-bottom: 4px;
+}
+
+.my-review-card__course h2 {
+  margin: 0;
+  color: #172033;
+  font-size: 1.1rem;
+}
+
+.my-review-card__course h2 a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.my-review-card__course h2 a:hover {
+  color: #1d4ed8;
+}
+
+.my-review-card__body {
+  padding-top: 16px;
+}
+
+.my-review-card__stars {
+  margin: 0;
+  color: #e9a008;
+  letter-spacing: 0.08em;
+}
+
+.my-review-card__stars span {
+  color: #cbd5e1;
+}
+
+.my-review-card__comment {
+  margin: 10px 0 0;
+  color: #475569;
+  line-height: 1.65;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.my-review-card__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.my-review-card__actions > button,
+.my-review-card__confirm button,
+.my-review-editor__footer button {
+  min-height: 38px;
+  padding: 0 13px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #fff;
+  color: #334155;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.my-review-card__actions button.is-danger {
+  border-color: #fecaca;
+  color: #b91c1c;
+}
+
+.my-review-card__confirm {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  color: #475569;
+  font-size: 0.88rem;
+}
+
+.my-review-card__confirm button.is-danger,
+.my-review-editor__footer button[type="submit"] {
+  border-color: #1d4ed8;
+  background: #1d4ed8;
+  color: #fff;
+}
+
+.my-review-card__confirm button:disabled,
+.my-review-editor__footer button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.my-review-editor {
+  display: grid;
+  gap: 16px;
+  padding-top: 18px;
+}
+
+.my-review-editor fieldset {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.my-review-editor legend,
+.my-review-editor > label {
+  color: #334155;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.my-review-editor__ratings {
+  display: flex;
+  gap: 5px;
+  margin-top: 6px;
+}
+
+.my-review-editor__ratings button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #cbd5e1;
+  cursor: pointer;
+  font-size: 1.8rem;
+  line-height: 1;
+}
+
+.my-review-editor__ratings button.is-selected {
+  color: #e9a008;
+}
+
+.my-review-editor > label {
+  display: grid;
+  gap: 8px;
+}
+
+.my-review-editor textarea {
+  width: 100%;
+  min-height: 110px;
+  padding: 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 9px;
+  color: #172033;
+  font: inherit;
+  font-weight: 400;
+  resize: vertical;
+}
+
+.my-review-editor textarea:focus {
+  border-color: #2563eb;
+  outline: 3px solid rgb(37 99 235 / 14%);
+}
+
+.my-review-editor__footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  color: #64748b;
+  font-size: 0.85rem;
+}
+
+.my-review-editor__footer > div {
+  display: flex;
+  gap: 8px;
+}
+
 .library-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));

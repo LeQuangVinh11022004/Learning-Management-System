@@ -80,3 +80,10 @@ Vite prints the local development URL in the terminal (usually
 | `npm run lint` | Run ESLint |
 | `npm run build` | Create a production build in `dist/` |
 | `npm run preview` | Preview the production build |
+
+## Community
+
+- [Contributing guide](CONTRIBUTING.md)
+- [Code of Conduct](CODE_OF_CONDUCT.md)
+- [Security policy](SECURITY.md)
+- [MIT License](LICENSE)

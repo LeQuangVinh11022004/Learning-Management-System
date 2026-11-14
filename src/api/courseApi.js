@@ -61,3 +61,34 @@ export async function fetchCourseReviews(courseId) {
 
   return reviews;
 }
+
+export async function fetchUserReviews(userId) {
+  const response = await api.get(
+    `/reviews/user/${encodeURIComponent(userId)}`,
+  );
+  const payload = response.data?.data ?? response.data;
+
+  if (!Array.isArray(payload)) {
+    throw new Error("Dữ liệu đánh giá của bạn từ máy chủ không hợp lệ.");
+  }
+
+  return payload;
+}
+
+export async function updateReview(reviewId, review) {
+  const response = await api.patch(
+    `/reviews/updateReview/${encodeURIComponent(reviewId)}`,
+    {
+      rating: review.rating,
+      comment: review.comment,
+    },
+  );
+  return response.data;
+}
+
+export async function deleteReview(reviewId) {
+  const response = await api.delete(
+    `/reviews/deleteReview/${encodeURIComponent(reviewId)}`,
+  );
+  return response.data;
+}
