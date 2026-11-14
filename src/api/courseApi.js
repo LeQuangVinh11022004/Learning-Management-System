@@ -75,6 +75,15 @@ export async function fetchUserReviews(userId) {
   return payload;
 }
 
+export async function createReview(courseId, review) {
+  const response = await api.post("/reviews/createReview", {
+    courseID: courseId,
+    rating: review.rating,
+    comment: review.comment,
+  });
+  return response.data;
+}
+
 export async function updateReview(reviewId, review) {
   const response = await api.patch(
     `/reviews/updateReview/${encodeURIComponent(reviewId)}`,

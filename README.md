@@ -22,7 +22,8 @@ frontend application.
 ## Features
 
 - Account registration, sign-in, email OTP verification, and password recovery.
-- Course catalog with search, filters, curriculum, and reviews.
+- Course catalog with search, filters, curriculum, and reviews; learners can
+  submit and manage their own course reviews.
 - Wishlist, shopping cart, and wallet checkout.
 - Enrolled course library and lesson video viewing.
 - Student profile viewing and editing.

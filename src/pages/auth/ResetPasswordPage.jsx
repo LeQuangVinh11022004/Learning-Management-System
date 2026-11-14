@@ -10,6 +10,8 @@ function ResetPasswordPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -88,23 +90,49 @@ function ResetPasswordPage() {
             <form className="login-form" onSubmit={handleSubmit}>
               <label className="login-form__field">
                 <span>Mật khẩu mới</span>
-                <input
-                  autoComplete="new-password"
-                  minLength={8}
-                  name="password"
-                  required
-                  type="password"
-                />
+                <span className="login-form__password">
+                  <input
+                    autoComplete="new-password"
+                    minLength={8}
+                    name="password"
+                    required
+                    type={showPassword ? "text" : "password"}
+                  />
+                  <button
+                    aria-label={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+                    className="login-form__toggle"
+                    onClick={() => setShowPassword((visible) => !visible)}
+                    type="button"
+                  >
+                    {showPassword ? "Ẩn" : "Hiện"}
+                  </button>
+                </span>
               </label>
               <label className="login-form__field">
                 <span>Xác nhận mật khẩu</span>
-                <input
-                  autoComplete="new-password"
-                  minLength={8}
-                  name="confirmPassword"
-                  required
-                  type="password"
-                />
+                <span className="login-form__password">
+                  <input
+                    autoComplete="new-password"
+                    minLength={8}
+                    name="confirmPassword"
+                    required
+                    type={showConfirmPassword ? "text" : "password"}
+                  />
+                  <button
+                    aria-label={
+                      showConfirmPassword
+                        ? "Ẩn mật khẩu xác nhận"
+                        : "Hiện mật khẩu xác nhận"
+                    }
+                    className="login-form__toggle"
+                    onClick={() =>
+                      setShowConfirmPassword((visible) => !visible)
+                    }
+                    type="button"
+                  >
+                    {showConfirmPassword ? "Ẩn" : "Hiện"}
+                  </button>
+                </span>
               </label>
               {errorMessage && (
                 <p className="login-form__error" role="alert">

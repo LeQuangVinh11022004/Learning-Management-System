@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { fetchCourseById } from "../../api/courseApi.js";
 import { getApiErrorMessage } from "../../utils/getApiErrorMessage.js";
+import CourseReviewForm from "./CourseReviewForm.jsx";
 import "./StudentLibraryPages.css";
 
 function getYouTubeEmbedUrl(videoUrl) {
@@ -251,6 +252,7 @@ function CourseLearningPage() {
                 </article>
               </div>
             )}
+            <CourseReviewForm key={id} courseId={id} />
           </>
         )}
       </section>

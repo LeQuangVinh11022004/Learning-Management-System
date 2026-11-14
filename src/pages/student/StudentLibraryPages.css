@@ -293,6 +293,94 @@
   max-width: 260px;
 }
 
+.course-review-form {
+  max-width: 860px;
+  margin-top: 24px;
+  padding: clamp(20px, 3vw, 28px);
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  background: #fff;
+}
+
+.course-review-form h2 {
+  margin: 0 0 16px;
+  font-size: 1.25rem;
+}
+
+.course-review-form p {
+  color: #475569;
+  line-height: 1.5;
+}
+
+.course-review-form a {
+  color: #1d4ed8;
+}
+
+.course-review-form fieldset {
+  margin: 0 0 18px;
+  padding: 0;
+  border: 0;
+}
+
+.course-review-form legend,
+.course-review-form__comment {
+  color: #334155;
+  font-weight: 600;
+}
+
+.course-review-form__ratings {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.course-review-form__ratings label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.course-review-form__comment {
+  display: grid;
+  gap: 8px;
+}
+
+.course-review-form textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 9px;
+  font: inherit;
+  resize: vertical;
+}
+
+.course-review-form__count {
+  margin: 6px 0 16px;
+  font-size: 0.85rem;
+  text-align: right;
+}
+
+.course-review-form button {
+  padding: 10px 16px;
+  border: 0;
+  border-radius: 9px;
+  background: #1d4ed8;
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+}
+
+.course-review-form button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.course-review-form .course-review-form__error {
+  color: #b91c1c;
+}
+
 .my-reviews__filter label {
   display: grid;
   gap: 8px;
