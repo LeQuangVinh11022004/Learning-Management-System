@@ -25,7 +25,8 @@ frontend application.
 - Course catalog with search, filters, curriculum, and reviews; learners can
   submit and manage their own course reviews.
 - Wishlist, shopping cart, and wallet checkout.
-- Enrolled course library and lesson video viewing.
+- Enrolled course library, lesson video viewing, and navigation between
+  available lessons.
 - Student profile viewing and editing.
 
 ## Technology

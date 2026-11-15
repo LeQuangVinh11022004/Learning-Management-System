@@ -2,6 +2,10 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { fetchCourseById } from "../../api/courseApi.js";
 import { getApiErrorMessage } from "../../utils/getApiErrorMessage.js";
+import {
+  getAvailableLessons,
+  getLessonNavigation,
+} from "../../utils/learningNavigation.js";
 import CourseReviewForm from "./CourseReviewForm.jsx";
 import "./StudentLibraryPages.css";
 
@@ -56,7 +60,7 @@ function formatDuration(seconds) {
 function CourseLearningPage() {
   const { id } = useParams();
   const [course, setCourse] = useState(null);
-  const [activeLessonId, setActiveLessonId] = useState("");
+  const [activeLessonKey, setActiveLessonKey] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -67,7 +71,7 @@ function CourseLearningPage() {
       setIsLoading(true);
       setErrorMessage("");
       setCourse(null);
-      setActiveLessonId("");
+      setActiveLessonKey("");
 
       try {
         const result = await fetchCourseById(id);
@@ -104,15 +108,11 @@ function CourseLearningPage() {
     [course],
   );
   const lessons = sections.flatMap((section) => section.lessons);
-  const activeLesson =
-    lessons.find((lesson) => (lesson.id ?? lesson._id) === activeLessonId) ??
-    lessons.find((lesson) => !lesson.isLocked) ??
-    null;
-
-  function selectLesson(lesson) {
-    if (lesson.isLocked) return;
-    setActiveLessonId(lesson.id ?? lesson._id ?? "");
-  }
+  const navigation = getLessonNavigation(
+    getAvailableLessons(sections),
+    activeLessonKey,
+  );
+  const activeLesson = navigation.current?.lesson ?? null;
 
   return (
     <main className="library-page">
@@ -176,15 +176,16 @@ function CourseLearningPage() {
                         {section.lessons.map((lesson, lessonIndex) => {
                           const lessonId =
                             lesson.id ?? lesson._id ?? `${index}-${lessonIndex}`;
-                          const isActive = lessonId === activeLessonId;
+                          const lessonKey = `${index}-${lessonIndex}`;
+                          const isActive = lessonKey === navigation.current?.key;
 
                           return (
                             <li key={lessonId}>
                               <button
-                                aria-current={isActive ? "true" : undefined}
+                                aria-current={isActive ? "step" : undefined}
                                 className={`learning-lesson${isActive ? " is-active" : ""}`}
                                 disabled={lesson.isLocked}
-                                onClick={() => selectLesson(lesson)}
+                                onClick={() => setActiveLessonKey(lessonKey)}
                                 type="button"
                               >
                                 <span>
@@ -238,6 +239,28 @@ function CourseLearningPage() {
                         {activeLesson.description && (
                           <p>{activeLesson.description}</p>
                         )}
+                        <nav
+                          aria-label="Điều hướng bài học"
+                          className="learning-navigation"
+                        >
+                          <button
+                            disabled={!navigation.previous}
+                            onClick={() => setActiveLessonKey(navigation.previous.key)}
+                            type="button"
+                          >
+                            ← Bài trước
+                          </button>
+                          <span aria-live="polite">
+                            Bài khả dụng {navigation.position}/{navigation.total}
+                          </span>
+                          <button
+                            disabled={!navigation.next}
+                            onClick={() => setActiveLessonKey(navigation.next.key)}
+                            type="button"
+                          >
+                            Bài tiếp theo →
+                          </button>
+                        </nav>
                       </div>
                     </>
                   ) : (

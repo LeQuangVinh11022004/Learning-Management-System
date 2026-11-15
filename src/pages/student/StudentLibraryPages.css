@@ -878,6 +878,40 @@
   padding: 24px;
 }
 
+.learning-navigation {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.learning-navigation button {
+  padding: 10px 14px;
+  border: 1px solid #bfdbfe;
+  border-radius: 9px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+}
+
+.learning-navigation button:disabled {
+  color: #94a3b8;
+  background: #f1f5f9;
+  border-color: #e2e8f0;
+  cursor: not-allowed;
+}
+
+.learning-navigation span {
+  color: #64748b;
+  font-size: 0.85rem;
+}
+
 .learning-player__details h2,
 .learning-player__locked h2 {
   margin: 0;
@@ -885,7 +919,7 @@
   font-size: 1.35rem;
 }
 
-.learning-player__details > p:last-child,
+.learning-player__details > p:not(.library-eyebrow),
 .learning-player__locked p {
   margin: 12px 0 0;
   color: #64748b;
