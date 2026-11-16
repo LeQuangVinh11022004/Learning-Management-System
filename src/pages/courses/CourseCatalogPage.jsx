@@ -6,11 +6,13 @@ import {
   addCourseToCart,
 } from "../../api/studentLibraryApi.js";
 import { getApiErrorMessage } from "../../utils/getApiErrorMessage.js";
+import { getCatalogPrice, sortCoursesByPrice } from "../../utils/courseSorting.js";
 import "./CoursePages.css";
 
 const PAGE_SIZE = 9;
 
 function formatPrice(value) {
+  if (value === null) return "Liên hệ";
   const price = Number(value);
   if (!Number.isFinite(price)) return "Liên hệ";
 
@@ -28,6 +30,7 @@ function CourseCatalogPage() {
   const [errorMessage, setErrorMessage] = useState("");
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
+  const [sortOrder, setSortOrder] = useState("default");
   const [page, setPage] = useState(1);
   const [actionCourseId, setActionCourseId] = useState(null);
   const [actionMessage, setActionMessage] = useState("");
@@ -102,8 +105,12 @@ function CourseCatalogPage() {
     });
   }, [courses, search, selectedCategory]);
 
-  const totalPages = Math.ceil(filteredCourses.length / PAGE_SIZE);
-  const visibleCourses = filteredCourses.slice(
+  const sortedCourses = useMemo(
+    () => sortCoursesByPrice(filteredCourses, sortOrder),
+    [filteredCourses, sortOrder],
+  );
+  const totalPages = Math.ceil(sortedCourses.length / PAGE_SIZE);
+  const visibleCourses = sortedCourses.slice(
     (page - 1) * PAGE_SIZE,
     page * PAGE_SIZE,
   );
@@ -115,6 +122,11 @@ function CourseCatalogPage() {
 
   function updateCategory(event) {
     setSelectedCategory(event.target.value);
+    setPage(1);
+  }
+
+  function updateSortOrder(event) {
+    setSortOrder(event.target.value);
     setPage(1);
   }
 
@@ -189,6 +201,14 @@ function CourseCatalogPage() {
               ))}
             </select>
           </label>
+          <label className="course-catalog__sort">
+            <span className="visually-hidden">Sắp xếp khóa học</span>
+            <select onChange={updateSortOrder} value={sortOrder}>
+              <option value="default">Sắp xếp mặc định</option>
+              <option value="price-asc">Giá: thấp đến cao</option>
+              <option value="price-desc">Giá: cao đến thấp</option>
+            </select>
+          </label>
           <p aria-live="polite" className="course-catalog__count">
             {filteredCourses.length} khóa học
           </p>
@@ -221,8 +241,7 @@ function CourseCatalogPage() {
           <>
             <div className="course-grid">
               {visibleCourses.map((course) => {
-                const price =
-                  course.priceDiscount ?? course.price ?? course.discountPrice;
+                const price = getCatalogPrice(course);
 
                 return (
                   <article className="course-card" key={course.id}>
