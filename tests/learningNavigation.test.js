@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
+  getCompletedLessonIds,
   getAvailableLessons,
   getLessonNavigation,
 } from "../src/utils/learningNavigation.js";
@@ -39,4 +40,31 @@ test("handles no unlocked lessons and missing lesson identifiers", () => {
   const lessons = getAvailableLessons([{ lessons: [{ title: "No id" }] }]);
   assert.equal(getLessonNavigation(lessons, "0-0").current.lesson.title, "No id");
   assert.equal(getLessonNavigation(lessons, "missing").position, 1);
+});
+
+test("finds completed lessons only for the current user", () => {
+  const completedIds = getCompletedLessonIds(
+    [
+      {
+        lessons: [
+          {
+            id: "done",
+            users: [{ userId: "student-1", progress: 100 }],
+          },
+          {
+            id: "in-progress",
+            users: [{ userId: "student-1", progress: 50 }],
+          },
+          {
+            id: "other-user",
+            users: [{ userId: "student-2", progress: 100 }],
+          },
+        ],
+      },
+    ],
+    "student-1",
+  );
+
+  assert.deepEqual([...completedIds], ["done"]);
+  assert.deepEqual([...getCompletedLessonIds([], null)], []);
 });

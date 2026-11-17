@@ -22,3 +22,28 @@ export function getLessonNavigation(availableLessons, selectedKey) {
     total: availableLessons.length,
   };
 }
+
+export function getCompletedLessonIds(sections, userId) {
+  if (!userId) return new Set();
+  const completedIds = new Set();
+
+  for (const section of sections) {
+    for (const lesson of section.lessons) {
+      const lessonId = lesson.id ?? lesson._id;
+      const hasCompletedProgress = Array.isArray(lesson.users)
+        ? lesson.users.some(
+            (user) =>
+              String(user.userId ?? user.user?.id ?? user.user?._id) ===
+                String(userId) &&
+              Number(user.progress) >= 100,
+          )
+        : false;
+
+      if (lessonId != null && hasCompletedProgress) {
+        completedIds.add(String(lessonId));
+      }
+    }
+  }
+
+  return completedIds;
+}

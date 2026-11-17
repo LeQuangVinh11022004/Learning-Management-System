@@ -1,8 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { fetchCourseById } from "../../api/courseApi.js";
+import {
+  fetchCurrentUser,
+  markLessonComplete,
+} from "../../api/studentLibraryApi.js";
 import { getApiErrorMessage } from "../../utils/getApiErrorMessage.js";
 import {
+  getCompletedLessonIds,
   getAvailableLessons,
   getLessonNavigation,
 } from "../../utils/learningNavigation.js";
@@ -59,10 +64,16 @@ function formatDuration(seconds) {
 
 function CourseLearningPage() {
   const { id } = useParams();
+  const isAuthenticated = Boolean(window.localStorage.getItem("accessToken"));
   const [course, setCourse] = useState(null);
   const [activeLessonKey, setActiveLessonKey] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
+  const [userId, setUserId] = useState("");
+  const [completedLessonIds, setCompletedLessonIds] = useState(() => new Set());
+  const [pendingLessonId, setPendingLessonId] = useState("");
+  const [progressError, setProgressError] = useState("");
+  const [progressMessage, setProgressMessage] = useState("");
 
   useEffect(() => {
     let isCurrent = true;
@@ -72,10 +83,36 @@ function CourseLearningPage() {
       setErrorMessage("");
       setCourse(null);
       setActiveLessonKey("");
+      setUserId("");
+      setCompletedLessonIds(new Set());
+      setProgressError("");
+      setProgressMessage("");
 
       try {
         const result = await fetchCourseById(id);
         if (isCurrent) setCourse(result);
+
+        if (isAuthenticated) {
+          try {
+            const user = await fetchCurrentUser();
+            if (isCurrent) {
+              const currentUserId = user.id ?? user._id ?? "";
+              setUserId(String(currentUserId));
+              setCompletedLessonIds(
+                getCompletedLessonIds(result.titles ?? [], currentUserId),
+              );
+            }
+          } catch (error) {
+            if (isCurrent) {
+              setProgressError(
+                getApiErrorMessage(
+                  error,
+                  "Không thể tải tiến độ bài học của bạn.",
+                ),
+              );
+            }
+          }
+        }
       } catch (error) {
         if (isCurrent) {
           setErrorMessage(
@@ -92,7 +129,7 @@ function CourseLearningPage() {
     return () => {
       isCurrent = false;
     };
-  }, [id]);
+  }, [id, isAuthenticated]);
 
   const sections = useMemo(
     () =>
@@ -113,6 +150,58 @@ function CourseLearningPage() {
     activeLessonKey,
   );
   const activeLesson = navigation.current?.lesson ?? null;
+  const activeLessonId = activeLesson?.id ?? activeLesson?._id;
+  const isActiveLessonComplete =
+    activeLessonId != null && completedLessonIds.has(String(activeLessonId));
+
+  async function retryProgressLoad() {
+    setProgressError("");
+    try {
+      const user = await fetchCurrentUser();
+      const currentUserId = user.id ?? user._id ?? "";
+      setUserId(String(currentUserId));
+      setCompletedLessonIds(
+        getCompletedLessonIds(course?.titles ?? [], currentUserId),
+      );
+    } catch (error) {
+      setProgressError(
+        getApiErrorMessage(error, "Không thể tải tiến độ bài học của bạn."),
+      );
+    }
+  }
+
+  async function handleMarkLessonComplete() {
+    const lessonId = activeLesson?.id ?? activeLesson?._id;
+    const section = sections[navigation.current?.key.split("-")[0]];
+    const titleId = activeLesson?.titleId ?? section?.id ?? section?._id;
+
+    if (!userId) {
+      setProgressError("Đăng nhập để lưu tiến độ học tập.");
+      return;
+    }
+    if (!lessonId || !titleId) {
+      setProgressError("Không đủ thông tin để cập nhật tiến độ bài học.");
+      return;
+    }
+
+    setPendingLessonId(String(lessonId));
+    setProgressError("");
+    setProgressMessage("");
+
+    try {
+      await markLessonComplete(id, lessonId, titleId);
+      setCompletedLessonIds(
+        (current) => new Set([...current, String(lessonId)]),
+      );
+      setProgressMessage("Đã lưu bài học hoàn thành.");
+    } catch (error) {
+      setProgressError(
+        getApiErrorMessage(error, "Không thể lưu tiến độ bài học."),
+      );
+    } finally {
+      setPendingLessonId("");
+    }
+  }
 
   return (
     <main className="library-page">
@@ -178,18 +267,21 @@ function CourseLearningPage() {
                             lesson.id ?? lesson._id ?? `${index}-${lessonIndex}`;
                           const lessonKey = `${index}-${lessonIndex}`;
                           const isActive = lessonKey === navigation.current?.key;
+                          const isComplete = completedLessonIds.has(
+                            String(lesson.id ?? lesson._id),
+                          );
 
                           return (
                             <li key={lessonId}>
                               <button
                                 aria-current={isActive ? "step" : undefined}
-                                className={`learning-lesson${isActive ? " is-active" : ""}`}
+                                className={`learning-lesson${isActive ? " is-active" : ""}${isComplete ? " is-complete" : ""}`}
                                 disabled={lesson.isLocked}
                                 onClick={() => setActiveLessonKey(lessonKey)}
                                 type="button"
                               >
                                 <span>
-                                  {lesson.isLocked ? "🔒" : "▶"}
+                                  {lesson.isLocked ? "🔒" : isComplete ? "✓" : "▶"}
                                 </span>
                                 <span>{lesson.title || "Bài học"}</span>
                                 {formatDuration(lesson.duration) ? (
@@ -238,6 +330,48 @@ function CourseLearningPage() {
                         <h2>{activeLesson.title || "Bài học"}</h2>
                         {activeLesson.description && (
                           <p>{activeLesson.description}</p>
+                        )}
+                        {progressError && (
+                          <p className="learning-progress__error" role="alert">
+                            {progressError}
+                          </p>
+                        )}
+                        {progressMessage && (
+                          <p className="learning-progress__success" role="status">
+                            {progressMessage}
+                          </p>
+                        )}
+                        {userId ? (
+                          <button
+                            className="learning-progress__button"
+                            disabled={
+                              isActiveLessonComplete ||
+                              pendingLessonId === String(activeLessonId)
+                            }
+                            onClick={handleMarkLessonComplete}
+                            type="button"
+                          >
+                            {isActiveLessonComplete
+                              ? "Đã hoàn thành"
+                              : pendingLessonId === String(activeLessonId)
+                                ? "Đang lưu tiến độ..."
+                                : "Đánh dấu hoàn thành"}
+                          </button>
+                        ) : isAuthenticated ? (
+                          <button
+                            className="learning-progress__login"
+                            onClick={retryProgressLoad}
+                            type="button"
+                          >
+                            Thử tải lại tiến độ
+                          </button>
+                        ) : (
+                          <Link
+                            className="learning-progress__login"
+                            to="/login"
+                          >
+                            Đăng nhập để lưu tiến độ
+                          </Link>
                         )}
                         <nav
                           aria-label="Điều hướng bài học"

@@ -115,3 +115,18 @@ export async function fetchEnrolledCourses() {
 
   return enrolledCourses;
 }
+
+export async function markLessonComplete(courseId, lessonId, titleId) {
+  if (!courseId || !lessonId || !titleId) {
+    throw new Error("Thiếu thông tin khóa học hoặc bài học.");
+  }
+
+  await api.post(
+    `/lessons/${encodeURIComponent(lessonId)}/complete`,
+    { percentage: 100 },
+  );
+  await api.put(
+    `/enrolls/completed-lesson/${encodeURIComponent(courseId)}`,
+    { titleID: titleId, lessonID: lessonId },
+  );
+}
