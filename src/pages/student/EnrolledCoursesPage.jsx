@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { fetchEnrolledCourses } from "../../api/studentLibraryApi.js";
 import { getApiErrorMessage } from "../../utils/getApiErrorMessage.js";
+import { getEnrollmentProgress } from "../../utils/enrollmentProgress.js";
 import "./StudentLibraryPages.css";
 
 const PAGE_SIZE = 6;
@@ -155,6 +156,7 @@ function EnrolledCoursesPage() {
               {visibleEnrollments.map((enrollment, index) => {
                 const course = getCourse(enrollment);
                 const courseId = course?.id ?? course?._id;
+                const progress = getEnrollmentProgress(enrollment);
 
                 if (!courseId) return null;
 
@@ -189,6 +191,30 @@ function EnrolledCoursesPage() {
                         {course.description ||
                           "Mở khóa học để xem nội dung và giáo trình."}
                       </p>
+                      <div className="enrollment-progress">
+                        <div className="enrollment-progress__label">
+                          <span>Tiến độ học tập</span>
+                          <span>
+                            {progress === null ? "Chưa có dữ liệu" : `${progress}%`}
+                          </span>
+                        </div>
+                        {progress === null ? (
+                          <div className="enrollment-progress__unavailable">
+                            Tiến độ chưa được cung cấp
+                          </div>
+                        ) : (
+                          <div
+                            aria-label={`Hoàn thành ${progress}% khóa học`}
+                            aria-valuemax="100"
+                            aria-valuemin="0"
+                            aria-valuenow={progress}
+                            className="enrollment-progress__track"
+                            role="progressbar"
+                          >
+                            <span style={{ width: `${progress}%` }} />
+                          </div>
+                        )}
+                      </div>
                       <div className="enrolled-course-card__footer">
                         <span>Đã đăng ký</span>
                         <Link

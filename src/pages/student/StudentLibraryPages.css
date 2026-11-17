@@ -731,6 +731,40 @@
   font-size: 0.82rem;
 }
 
+.enrollment-progress {
+  margin: 4px 0 16px;
+}
+
+.enrollment-progress__label {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+  color: #475569;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.enrollment-progress__track {
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e2e8f0;
+}
+
+.enrollment-progress__track span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: #2563eb;
+  transition: width 180ms ease;
+}
+
+.enrollment-progress__unavailable {
+  color: #94a3b8;
+  font-size: 0.8rem;
+}
+
 .enrolled-course-card__footer span {
   color: #047857;
   font-weight: 600;

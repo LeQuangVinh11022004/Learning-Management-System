@@ -5,6 +5,7 @@ import {
   getAvailableLessons,
   getLessonNavigation,
 } from "../src/utils/learningNavigation.js";
+import { getEnrollmentProgress } from "../src/utils/enrollmentProgress.js";
 
 test("navigates between unlocked lessons across sections", () => {
   const first = { id: "first" };
@@ -67,4 +68,13 @@ test("finds completed lessons only for the current user", () => {
 
   assert.deepEqual([...completedIds], ["done"]);
   assert.deepEqual([...getCompletedLessonIds([], null)], []);
+});
+
+test("normalizes enrollment progress and completed status", () => {
+  assert.equal(getEnrollmentProgress({ progress: "45.6" }), 46);
+  assert.equal(getEnrollmentProgress({ progress: -10 }), 0);
+  assert.equal(getEnrollmentProgress({ progress: 150 }), 100);
+  assert.equal(getEnrollmentProgress({ isCompleted: true, progress: 40 }), 100);
+  assert.equal(getEnrollmentProgress({ progress: "unknown" }), null);
+  assert.equal(getEnrollmentProgress({}), null);
 });

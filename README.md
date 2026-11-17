@@ -19,6 +19,12 @@ checkout, course reviews, lesson video viewing, and profile management. It is
 designed to connect to a separate backend API; this repository contains the
 frontend application.
 
+## Live deployment
+
+The production application is hosted on Vercel:
+
+[learning-management-system-two-liard.vercel.app](https://learning-management-system-two-liard.vercel.app/)
+
 ## Features
 
 - Account registration, sign-in, email OTP verification, and password recovery.
@@ -74,12 +80,31 @@ npm run dev
 Vite prints the local development URL in the terminal (usually
 `http://localhost:5173`).
 
+## CI/CD
+
+GitHub Actions runs lint, tests, and a production build on pull requests and
+pushes to `main`. Vercel Git Integration is the deployment pipeline; a
+separate GitHub Actions deploy job is intentionally not used to avoid duplicate
+deployments:
+
+1. Pull requests receive Vercel preview deployments.
+2. Pushes or merges to the Vercel production branch (`main`) trigger production
+   deployments.
+3. Set `VITE_API_URL` in the Vercel project environment variables for Preview
+   and Production.
+4. To ensure CI passes before production changes are merged, protect `main` in
+   GitHub and require the **Lint, test, and build** status check.
+
+`vercel.json` includes a rewrite so direct navigation to client-side routes
+continues to load the React application.
+
 ## Available scripts
 
 | Command | Description |
 | --- | --- |
 | `npm run dev` | Start the development server |
 | `npm run lint` | Run ESLint |
+| `npm test` | Run automated tests |
 | `npm run build` | Create a production build in `dist/` |
 | `npm run preview` | Preview the production build |
 
