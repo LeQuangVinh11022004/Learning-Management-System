@@ -105,6 +105,57 @@
   max-width: 520px;
 }
 
+.enrollment-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 0 0 24px;
+}
+
+.enrollment-filters button {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  gap: 9px;
+  padding: 0 14px;
+  border: 1px solid #cbd5e1;
+  border-radius: 999px;
+  background: #fff;
+  color: #475569;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.enrollment-filters button:hover {
+  border-color: #93c5fd;
+  color: #1d4ed8;
+}
+
+.enrollment-filters button.is-active {
+  border-color: #1d4ed8;
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.enrollment-filters button span {
+  display: grid;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 0.75rem;
+  place-items: center;
+}
+
+.enrollment-filters button.is-active span {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
 .library-toolbar input,
 .library-toolbar select {
   width: 100%;

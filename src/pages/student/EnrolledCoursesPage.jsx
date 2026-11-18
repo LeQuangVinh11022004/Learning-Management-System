@@ -2,7 +2,10 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { fetchEnrolledCourses } from "../../api/studentLibraryApi.js";
 import { getApiErrorMessage } from "../../utils/getApiErrorMessage.js";
-import { getEnrollmentProgress } from "../../utils/enrollmentProgress.js";
+import {
+  filterEnrollmentsByStatus,
+  getEnrollmentProgress,
+} from "../../utils/enrollmentProgress.js";
 import "./StudentLibraryPages.css";
 
 const PAGE_SIZE = 6;
@@ -15,6 +18,7 @@ function EnrolledCoursesPage() {
   const navigate = useNavigate();
   const [enrollments, setEnrollments] = useState([]);
   const [search, setSearch] = useState("");
+  const [status, setStatus] = useState("all");
   const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
@@ -49,11 +53,20 @@ function EnrolledCoursesPage() {
   const filteredEnrollments = useMemo(() => {
     const query = search.trim().toLocaleLowerCase("vi");
 
-    return enrollments.filter((enrollment) => {
+    return filterEnrollmentsByStatus(enrollments, status).filter((enrollment) => {
       const course = getCourse(enrollment);
       return (course?.title ?? "").toLocaleLowerCase("vi").includes(query);
     });
-  }, [enrollments, search]);
+  }, [enrollments, search, status]);
+
+  const statusCounts = useMemo(
+    () => ({
+      all: enrollments.length,
+      "in-progress": filterEnrollmentsByStatus(enrollments, "in-progress").length,
+      completed: filterEnrollmentsByStatus(enrollments, "completed").length,
+    }),
+    [enrollments],
+  );
 
   const totalPages = Math.ceil(filteredEnrollments.length / PAGE_SIZE);
   const visibleEnrollments = filteredEnrollments.slice(
@@ -63,6 +76,11 @@ function EnrolledCoursesPage() {
 
   function updateSearch(event) {
     setSearch(event.target.value);
+    setPage(1);
+  }
+
+  function updateStatus(nextStatus) {
+    setStatus(nextStatus);
     setPage(1);
   }
 
@@ -118,6 +136,29 @@ function EnrolledCoursesPage() {
           </label>
         </div>
 
+        <div
+          aria-label="Lọc khóa học theo tiến độ"
+          className="enrollment-filters"
+          role="group"
+        >
+          {[
+            ["all", "Tất cả"],
+            ["in-progress", "Đang học"],
+            ["completed", "Hoàn thành"],
+          ].map(([value, label]) => (
+            <button
+              aria-pressed={status === value}
+              className={status === value ? "is-active" : ""}
+              key={value}
+              onClick={() => updateStatus(value)}
+              type="button"
+            >
+              {label}
+              <span>{statusCounts[value]}</span>
+            </button>
+          ))}
+        </div>
+
         {errorMessage && (
           <div className="library-error" role="alert">
             <p>{errorMessage}</p>
@@ -139,12 +180,16 @@ function EnrolledCoursesPage() {
             <h2>
               {enrollments.length === 0
                 ? "Bạn chưa đăng ký khóa học nào"
+                : status !== "all" && !search.trim()
+                  ? `Không có khóa học ${status === "completed" ? "đã hoàn thành" : "đang học"}`
                 : "Không tìm thấy khóa học"}
             </h2>
             <p>
               {enrollments.length === 0
                 ? "Khám phá danh mục để tìm khóa học phù hợp với bạn."
-                : "Thử đổi từ khóa tìm kiếm."}
+                : status !== "all" && !search.trim()
+                  ? "Chọn một trạng thái khác để xem các khóa học của bạn."
+                  : "Thử đổi từ khóa tìm kiếm hoặc trạng thái."}
             </p>
             <Link className="library-primary-link" to="/courses">
               Khám phá khóa học

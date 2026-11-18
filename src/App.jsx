@@ -12,6 +12,7 @@ import EnrolledCoursesPage from "./pages/student/EnrolledCoursesPage.jsx";
 import CourseLearningPage from "./pages/student/CourseLearningPage.jsx";
 import ProfilePage from "./pages/student/ProfilePage.jsx";
 import MyReviewsPage from "./pages/student/MyReviewsPage.jsx";
+import NotFoundPage from "./pages/NotFoundPage.jsx";
 
 function App() {
   return (
@@ -62,6 +63,7 @@ function App() {
         <Route path="/course-lesson/:id" element={<CourseLearningPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/my-reviews" element={<MyReviewsPage />} />
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </BrowserRouter>
   );

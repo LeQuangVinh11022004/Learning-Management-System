@@ -9,3 +9,15 @@ export function getEnrollmentProgress(enrollment) {
 
   return Math.min(100, Math.max(0, Math.round(progress)));
 }
+
+export function filterEnrollmentsByStatus(enrollments, status) {
+  if (status === "completed") {
+    return enrollments.filter((enrollment) => enrollment.isCompleted === true);
+  }
+
+  if (status === "in-progress") {
+    return enrollments.filter((enrollment) => enrollment.isCompleted !== true);
+  }
+
+  return enrollments;
+}
