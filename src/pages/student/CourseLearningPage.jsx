@@ -9,6 +9,7 @@ import { getApiErrorMessage } from "../../utils/getApiErrorMessage.js";
 import {
   getCompletedLessonIds,
   getAvailableLessons,
+  getLearningProgress,
   getLessonNavigation,
 } from "../../utils/learningNavigation.js";
 import CourseReviewForm from "./CourseReviewForm.jsx";
@@ -145,9 +146,14 @@ function CourseLearningPage() {
     [course],
   );
   const lessons = sections.flatMap((section) => section.lessons);
+  const availableLessons = useMemo(() => getAvailableLessons(sections), [sections]);
   const navigation = getLessonNavigation(
-    getAvailableLessons(sections),
+    availableLessons,
     activeLessonKey,
+  );
+  const learningProgress = getLearningProgress(
+    availableLessons,
+    completedLessonIds,
   );
   const activeLesson = navigation.current?.lesson ?? null;
   const activeLessonId = activeLesson?.id ?? activeLesson?._id;
@@ -241,6 +247,29 @@ function CourseLearningPage() {
               <p className="library-eyebrow">Không gian học tập</p>
               <h1>{course.title || "Khóa học"}</h1>
               <p>{lessons.length} bài học trong khóa học</p>
+              {isAuthenticated && userId && !progressError && learningProgress && (
+                <div className="learning-progress-summary">
+                  <div className="learning-progress-summary__label">
+                    <span>Tiến độ khóa học</span>
+                    <span>
+                      {learningProgress.completed}/{learningProgress.total} bài
+                      học · {learningProgress.percentage}%
+                    </span>
+                  </div>
+                  <div
+                    aria-label={`Hoàn thành ${learningProgress.percentage}% khóa học`}
+                    aria-valuemax="100"
+                    aria-valuemin="0"
+                    aria-valuenow={learningProgress.percentage}
+                    className="learning-progress-summary__track"
+                    role="progressbar"
+                  >
+                    <span
+                      style={{ width: `${learningProgress.percentage}%` }}
+                    />
+                  </div>
+                </div>
+              )}
             </div>
 
             {lessons.length === 0 ? (

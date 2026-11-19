@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import {
   getCompletedLessonIds,
   getAvailableLessons,
+  getLearningProgress,
   getLessonNavigation,
 } from "../src/utils/learningNavigation.js";
 import { getEnrollmentProgress } from "../src/utils/enrollmentProgress.js";
@@ -68,6 +69,24 @@ test("finds completed lessons only for the current user", () => {
 
   assert.deepEqual([...completedIds], ["done"]);
   assert.deepEqual([...getCompletedLessonIds([], null)], []);
+});
+
+test("calculates course progress from available lessons only", () => {
+  const availableLessons = getAvailableLessons([
+    {
+      lessons: [
+        { id: "done" },
+        { id: "pending" },
+        { id: "locked", isLocked: true },
+      ],
+    },
+  ]);
+
+  assert.deepEqual(
+    getLearningProgress(availableLessons, new Set(["done", "locked"])),
+    { completed: 1, total: 2, percentage: 50 },
+  );
+  assert.deepEqual(getLearningProgress([], new Set()), null);
 });
 
 test("normalizes enrollment progress and completed status", () => {

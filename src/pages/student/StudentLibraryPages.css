@@ -848,9 +848,48 @@
   letter-spacing: -0.04em;
 }
 
-.learning-heading > p:last-child {
+.learning-heading > p:last-of-type {
   margin: 8px 0 0;
   color: #64748b;
+}
+
+.learning-progress-summary {
+  width: min(100%, 520px);
+  margin-top: 20px;
+  padding: 14px 16px;
+  border: 1px solid #dbeafe;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.learning-progress-summary__label {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 6px 16px;
+  margin-bottom: 9px;
+  color: #334155;
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+.learning-progress-summary__label span:last-child {
+  color: #1d4ed8;
+}
+
+.learning-progress-summary__track {
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e2e8f0;
+}
+
+.learning-progress-summary__track span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #2563eb, #14b8a6);
+  transition: width 180ms ease;
 }
 
 .learning-layout {

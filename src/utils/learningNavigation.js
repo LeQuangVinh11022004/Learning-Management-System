@@ -47,3 +47,21 @@ export function getCompletedLessonIds(sections, userId) {
 
   return completedIds;
 }
+
+export function getLearningProgress(availableLessons, completedLessonIds) {
+  const total = availableLessons.length;
+  if (total === 0) return null;
+
+  const completed = availableLessons.reduce((count, item) => {
+    const lessonId = item.lesson.id ?? item.lesson._id;
+    return lessonId != null && completedLessonIds.has(String(lessonId))
+      ? count + 1
+      : count;
+  }, 0);
+
+  return {
+    completed,
+    total,
+    percentage: Math.round((completed / total) * 100),
+  };
+}
