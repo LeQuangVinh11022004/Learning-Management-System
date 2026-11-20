@@ -87,7 +87,7 @@
 
 .course-catalog__toolbar {
   display: grid;
-  grid-template-columns: minmax(200px, 1fr) minmax(160px, 220px) minmax(160px, 200px) auto;
+  grid-template-columns: minmax(200px, 1fr) repeat(4, minmax(130px, 160px)) auto;
   align-items: center;
   gap: 14px;
   margin-bottom: 24px;
@@ -95,6 +95,8 @@
 
 .course-catalog__search input,
 .course-catalog__category select,
+.course-catalog__price select,
+.course-catalog__rating select,
 .course-catalog__sort select {
   width: 100%;
   min-height: 46px;
@@ -108,6 +110,8 @@
 
 .course-catalog__search input:focus,
 .course-catalog__category select:focus,
+.course-catalog__price select:focus,
+.course-catalog__rating select:focus,
 .course-catalog__sort select:focus {
   border-color: #2563eb;
   outline: 3px solid rgb(37 99 235 / 14%);
@@ -119,6 +123,31 @@
   font-size: 0.9rem;
   text-align: right;
   white-space: nowrap;
+}
+
+.course-catalog__results {
+  display: grid;
+  justify-items: end;
+  gap: 6px;
+}
+
+.course-catalog__results p {
+  margin: 0;
+}
+
+.course-catalog__results button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #1d4ed8;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.course-catalog__results button:hover {
+  text-decoration: underline;
 }
 
 .course-grid {
@@ -731,6 +760,13 @@
 
   .course-catalog__count {
     grid-column: 1 / -1;
+  }
+
+  .course-catalog__results {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
   }
 
   .course-grid {

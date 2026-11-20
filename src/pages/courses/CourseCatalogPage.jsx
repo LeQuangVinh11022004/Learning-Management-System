@@ -5,8 +5,16 @@ import {
   addBookmark,
   addCourseToCart,
 } from "../../api/studentLibraryApi.js";
+import {
+  filterCatalogCourses,
+  getCatalogCategories,
+} from "../../utils/courseCatalogFilters.js";
 import { getApiErrorMessage } from "../../utils/getApiErrorMessage.js";
-import { getCatalogPrice, sortCoursesByPrice } from "../../utils/courseSorting.js";
+import {
+  getCatalogPrice,
+  sortCoursesByPrice,
+  sortCoursesByRating,
+} from "../../utils/courseSorting.js";
 import "./CoursePages.css";
 
 const PAGE_SIZE = 9;
@@ -30,6 +38,8 @@ function CourseCatalogPage() {
   const [errorMessage, setErrorMessage] = useState("");
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
+  const [selectedPrice, setSelectedPrice] = useState("all");
+  const [minimumRating, setMinimumRating] = useState("all");
   const [sortOrder, setSortOrder] = useState("default");
   const [page, setPage] = useState(1);
   const [actionCourseId, setActionCourseId] = useState(null);
@@ -71,42 +81,26 @@ function CourseCatalogPage() {
   }, []);
 
   const categories = useMemo(
-    () =>
-      [...new Set(courses.map((course) => course.category?.name).filter(Boolean))]
-        .sort((left, right) => left.localeCompare(right, "vi")),
+    () => getCatalogCategories(courses),
     [courses],
   );
 
-  const filteredCourses = useMemo(() => {
-    const query = search.trim().toLocaleLowerCase("vi");
-
-    return courses.filter((course) => {
-    const isAvailable =
-      course.isActive !== false && course.isConfirmed !== false;
-      const matchesCategory =
-        selectedCategory === "all" ||
-        course.category?.name === selectedCategory;
-      const searchableText = [
-        course.title,
-        course.description,
-        course.category?.name,
-        course.author?.firstName,
-        course.author?.lastName,
-      ]
-        .filter(Boolean)
-        .join(" ")
-        .toLocaleLowerCase("vi");
-
-      return (
-        isAvailable &&
-        matchesCategory &&
-        (!query || searchableText.includes(query))
-      );
-    });
-  }, [courses, search, selectedCategory]);
+  const filteredCourses = useMemo(
+    () =>
+      filterCatalogCourses(courses, {
+        search,
+        category: selectedCategory,
+        price: selectedPrice,
+        minimumRating,
+      }),
+    [courses, search, selectedCategory, selectedPrice, minimumRating],
+  );
 
   const sortedCourses = useMemo(
-    () => sortCoursesByPrice(filteredCourses, sortOrder),
+    () =>
+      sortOrder === "rating-desc"
+        ? sortCoursesByRating(filteredCourses)
+        : sortCoursesByPrice(filteredCourses, sortOrder),
     [filteredCourses, sortOrder],
   );
   const totalPages = Math.ceil(sortedCourses.length / PAGE_SIZE);
@@ -125,8 +119,27 @@ function CourseCatalogPage() {
     setPage(1);
   }
 
+  function updatePrice(event) {
+    setSelectedPrice(event.target.value);
+    setPage(1);
+  }
+
+  function updateMinimumRating(event) {
+    setMinimumRating(event.target.value);
+    setPage(1);
+  }
+
   function updateSortOrder(event) {
     setSortOrder(event.target.value);
+    setPage(1);
+  }
+
+  function resetFilters() {
+    setSearch("");
+    setSelectedCategory("all");
+    setSelectedPrice("all");
+    setMinimumRating("all");
+    setSortOrder("default");
     setPage(1);
   }
 
@@ -201,17 +214,45 @@ function CourseCatalogPage() {
               ))}
             </select>
           </label>
+          <label className="course-catalog__price">
+            <span className="visually-hidden">Lọc theo mức giá</span>
+            <select onChange={updatePrice} value={selectedPrice}>
+              <option value="all">Mọi mức giá</option>
+              <option value="free">Miễn phí</option>
+              <option value="paid">Có phí</option>
+            </select>
+          </label>
+          <label className="course-catalog__rating">
+            <span className="visually-hidden">Lọc theo đánh giá tối thiểu</span>
+            <select onChange={updateMinimumRating} value={minimumRating}>
+              <option value="all">Mọi đánh giá</option>
+              <option value="4">Từ 4 sao</option>
+              <option value="4.5">Từ 4.5 sao</option>
+            </select>
+          </label>
           <label className="course-catalog__sort">
             <span className="visually-hidden">Sắp xếp khóa học</span>
             <select onChange={updateSortOrder} value={sortOrder}>
               <option value="default">Sắp xếp mặc định</option>
               <option value="price-asc">Giá: thấp đến cao</option>
               <option value="price-desc">Giá: cao đến thấp</option>
+              <option value="rating-desc">Đánh giá cao nhất</option>
             </select>
           </label>
-          <p aria-live="polite" className="course-catalog__count">
-            {filteredCourses.length} khóa học
-          </p>
+          <div className="course-catalog__results">
+            <p aria-live="polite" className="course-catalog__count">
+              {filteredCourses.length} khóa học
+            </p>
+            {(search.trim() ||
+              selectedCategory !== "all" ||
+              selectedPrice !== "all" ||
+              minimumRating !== "all" ||
+              sortOrder !== "default") && (
+              <button onClick={resetFilters} type="button">
+                Xóa bộ lọc
+              </button>
+            )}
+          </div>
         </div>
 
         {actionMessage && (

@@ -19,3 +19,22 @@ export function sortCoursesByPrice(courses, order) {
       : rightPrice - leftPrice;
   });
 }
+
+export function getCatalogRating(course) {
+  if (course.ratingsAverage == null || course.ratingsAverage === "") return null;
+
+  const rating = Number(course.ratingsAverage);
+  return Number.isFinite(rating) && rating >= 0 && rating <= 5
+    ? rating
+    : null;
+}
+
+export function sortCoursesByRating(courses) {
+  return [...courses].sort((left, right) => {
+    const leftRating = getCatalogRating(left);
+    const rightRating = getCatalogRating(right);
+    if (leftRating === null) return rightRating === null ? 0 : 1;
+    if (rightRating === null) return -1;
+    return rightRating - leftRating;
+  });
+}

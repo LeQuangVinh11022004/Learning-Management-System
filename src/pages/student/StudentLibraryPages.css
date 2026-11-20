@@ -105,6 +105,10 @@
   max-width: 520px;
 }
 
+.library-toolbar--wishlist {
+  grid-template-columns: minmax(0, 1fr) minmax(160px, 220px) minmax(160px, 220px);
+}
+
 .enrollment-filters {
   display: flex;
   flex-wrap: wrap;

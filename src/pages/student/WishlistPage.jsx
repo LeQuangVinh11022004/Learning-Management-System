@@ -4,11 +4,20 @@ import {
   fetchBookmarks,
   removeBookmark,
 } from "../../api/studentLibraryApi.js";
+import { getCatalogCategories } from "../../utils/courseCatalogFilters.js";
+import { getCatalogPrice } from "../../utils/courseSorting.js";
 import { getApiErrorMessage } from "../../utils/getApiErrorMessage.js";
 import "./StudentLibraryPages.css";
 
+const PAGE_SIZE = 6;
+
 function getCourse(bookmark) {
   return bookmark?.course ?? bookmark;
+}
+
+function getCourseId(bookmark) {
+  const course = getCourse(bookmark);
+  return course?.id ?? course?._id;
 }
 
 function formatPrice(value) {
@@ -26,7 +35,9 @@ function WishlistPage() {
   const navigate = useNavigate();
   const [bookmarks, setBookmarks] = useState([]);
   const [search, setSearch] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("all");
   const [sortOrder, setSortOrder] = useState("recent");
+  const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [removingId, setRemovingId] = useState(null);
   const [errorMessage, setErrorMessage] = useState("");
@@ -56,29 +67,51 @@ function WishlistPage() {
     loadBookmarks();
   }, [loadBookmarks, navigate]);
 
-  const visibleBookmarks = useMemo(() => {
+  const categories = useMemo(
+    () => getCatalogCategories(bookmarks.map(getCourse)),
+    [bookmarks],
+  );
+
+  const filteredBookmarks = useMemo(() => {
     const query = search.trim().toLocaleLowerCase("vi");
     const filtered = bookmarks.filter((bookmark) => {
       const course = getCourse(bookmark);
-      return (course?.title ?? "").toLocaleLowerCase("vi").includes(query);
+      return (
+        (selectedCategory === "all" ||
+          course?.category?.name === selectedCategory) &&
+        (course?.title ?? "").toLocaleLowerCase("vi").includes(query)
+      );
     });
 
     if (sortOrder === "price-asc") {
-      filtered.sort(
-        (left, right) =>
-          Number(getCourse(left)?.priceDiscount ?? getCourse(left)?.price ?? 0) -
-          Number(getCourse(right)?.priceDiscount ?? getCourse(right)?.price ?? 0),
-      );
+      filtered.sort((left, right) => {
+        const leftPrice = getCatalogPrice(getCourse(left));
+        const rightPrice = getCatalogPrice(getCourse(right));
+        if (leftPrice === null) return rightPrice === null ? 0 : 1;
+        if (rightPrice === null) return -1;
+        return leftPrice - rightPrice;
+      });
     } else if (sortOrder === "price-desc") {
-      filtered.sort(
-        (left, right) =>
-          Number(getCourse(right)?.priceDiscount ?? getCourse(right)?.price ?? 0) -
-          Number(getCourse(left)?.priceDiscount ?? getCourse(left)?.price ?? 0),
-      );
+      filtered.sort((left, right) => {
+        const leftPrice = getCatalogPrice(getCourse(left));
+        const rightPrice = getCatalogPrice(getCourse(right));
+        if (leftPrice === null) return rightPrice === null ? 0 : 1;
+        if (rightPrice === null) return -1;
+        return rightPrice - leftPrice;
+      });
     }
 
     return filtered;
-  }, [bookmarks, search, sortOrder]);
+  }, [bookmarks, search, selectedCategory, sortOrder]);
+  const totalPages = Math.ceil(filteredBookmarks.length / PAGE_SIZE);
+  const visibleBookmarks = filteredBookmarks.slice(
+    (page - 1) * PAGE_SIZE,
+    page * PAGE_SIZE,
+  );
+
+  useEffect(() => {
+    if (page > totalPages) setPage(Math.max(totalPages, 1));
+  }, [page, totalPages]);
 
   async function handleRemove(courseId) {
     setRemovingId(courseId);
@@ -88,7 +121,7 @@ function WishlistPage() {
       await removeBookmark(courseId);
       setBookmarks((currentBookmarks) =>
         currentBookmarks.filter(
-          (bookmark) => getCourse(bookmark)?.id !== courseId,
+          (bookmark) => String(getCourseId(bookmark)) !== String(courseId),
         ),
       );
     } catch (error) {
@@ -98,6 +131,11 @@ function WishlistPage() {
     } finally {
       setRemovingId(null);
     }
+  }
+
+  function changePage(nextPage) {
+    setPage(nextPage);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   return (
@@ -135,20 +173,43 @@ function WishlistPage() {
           </span>
         </div>
 
-        <div className="library-toolbar">
+        <div className="library-toolbar library-toolbar--wishlist">
           <label>
             <span className="visually-hidden">Tìm trong danh sách yêu thích</span>
             <input
-              onChange={(event) => setSearch(event.target.value)}
+              onChange={(event) => {
+                setSearch(event.target.value);
+                setPage(1);
+              }}
               placeholder="Tìm khóa học"
               type="search"
               value={search}
             />
           </label>
           <label>
+            <span className="visually-hidden">Lọc theo danh mục</span>
+            <select
+              onChange={(event) => {
+                setSelectedCategory(event.target.value);
+                setPage(1);
+              }}
+              value={selectedCategory}
+            >
+              <option value="all">Tất cả danh mục</option>
+              {categories.map((category) => (
+                <option key={category} value={category}>
+                  {category}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
             <span className="visually-hidden">Sắp xếp khóa học</span>
             <select
-              onChange={(event) => setSortOrder(event.target.value)}
+              onChange={(event) => {
+                setSortOrder(event.target.value);
+                setPage(1);
+              }}
               value={sortOrder}
             >
               <option value="recent">Mới lưu trước</option>
@@ -171,7 +232,7 @@ function WishlistPage() {
           <p aria-live="polite" className="library-state">
             Đang tải danh sách yêu thích...
           </p>
-        ) : visibleBookmarks.length === 0 ? (
+        ) : filteredBookmarks.length === 0 ? (
           <div className="library-empty">
             <span aria-hidden="true" className="library-empty__icon">
               ♡
@@ -194,7 +255,7 @@ function WishlistPage() {
           <div className="library-grid">
             {visibleBookmarks.map((bookmark) => {
               const course = getCourse(bookmark);
-              const courseId = course?.id ?? course?._id;
+              const courseId = getCourseId(bookmark);
 
               if (!courseId) return null;
 
@@ -244,6 +305,30 @@ function WishlistPage() {
               );
             })}
           </div>
+        )}
+        {!isLoading && filteredBookmarks.length > 0 && totalPages > 1 && (
+          <nav
+            aria-label="Phân trang khóa học yêu thích"
+            className="course-pagination"
+          >
+            <button
+              disabled={page === 1}
+              onClick={() => changePage(page - 1)}
+              type="button"
+            >
+              Trước
+            </button>
+            <span>
+              Trang {page} / {totalPages}
+            </span>
+            <button
+              disabled={page === totalPages}
+              onClick={() => changePage(page + 1)}
+              type="button"
+            >
+              Tiếp
+            </button>
+          </nav>
         )}
       </section>
     </main>
