@@ -65,3 +65,21 @@ export function getLearningProgress(availableLessons, completedLessonIds) {
     percentage: Math.round((completed / total) * 100),
   };
 }
+
+export function getSectionProgress(section, completedLessonIds) {
+  const availableLessons = section.lessons.filter((lesson) => !lesson.isLocked);
+  if (availableLessons.length === 0) return null;
+
+  const completed = availableLessons.reduce((count, lesson) => {
+    const lessonId = lesson.id ?? lesson._id;
+    return lessonId != null && completedLessonIds.has(String(lessonId))
+      ? count + 1
+      : count;
+  }, 0);
+
+  return {
+    completed,
+    total: availableLessons.length,
+    percentage: Math.round((completed / availableLessons.length) * 100),
+  };
+}

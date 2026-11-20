@@ -5,6 +5,7 @@ import {
   getAvailableLessons,
   getLearningProgress,
   getLessonNavigation,
+  getSectionProgress,
 } from "../src/utils/learningNavigation.js";
 import { getEnrollmentProgress } from "../src/utils/enrollmentProgress.js";
 
@@ -87,6 +88,24 @@ test("calculates course progress from available lessons only", () => {
     { completed: 1, total: 2, percentage: 50 },
   );
   assert.deepEqual(getLearningProgress([], new Set()), null);
+});
+
+test("calculates section progress while excluding locked lessons", () => {
+  const section = {
+    lessons: [
+      { id: "done" },
+      { id: "pending" },
+      { id: "locked", isLocked: true },
+    ],
+  };
+  assert.deepEqual(
+    getSectionProgress(section, new Set(["done", "locked"])),
+    { completed: 1, total: 2, percentage: 50 },
+  );
+  assert.equal(
+    getSectionProgress({ lessons: [{ id: "locked", isLocked: true }] }, new Set()),
+    null,
+  );
 });
 
 test("normalizes enrollment progress and completed status", () => {

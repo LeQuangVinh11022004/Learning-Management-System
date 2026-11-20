@@ -914,19 +914,114 @@
   padding: 20px;
 }
 
-.learning-sidebar > h2 {
-  margin: 0 0 18px;
+.learning-sidebar__header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+.learning-sidebar__header h2 {
+  margin: 0;
   font-size: 1.1rem;
+}
+
+.learning-sidebar__toggle-all {
+  padding: 5px 8px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #1d4ed8;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.learning-sidebar__toggle-all:hover {
+  background: #eff6ff;
 }
 
 .learning-section + .learning-section {
   margin-top: 20px;
 }
 
+.learning-section-progress {
+  margin: 0 8px 8px;
+}
+
+.learning-section-progress__label {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 5px;
+  color: #64748b;
+  font-size: 0.72rem;
+}
+
+.learning-section-progress__track {
+  height: 4px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e2e8f0;
+}
+
+.learning-section-progress__track span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: #10b981;
+  transition: width 180ms ease;
+}
+
 .learning-section h3 {
-  margin: 0 0 8px;
+  margin: 0 0 6px;
   color: #475569;
   font-size: 0.9rem;
+}
+
+.learning-section__toggle {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  padding: 8px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+  text-align: left;
+}
+
+.learning-section__toggle:hover {
+  background: #f1f5f9;
+}
+
+.learning-section__toggle:focus-visible,
+.learning-sidebar__toggle-all:focus-visible {
+  outline: 3px solid rgb(37 99 235 / 35%);
+  outline-offset: 2px;
+}
+
+.learning-section__meta {
+  display: inline-flex;
+  flex: 0 0 auto;
+  gap: 8px;
+  align-items: center;
+  color: #64748b;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.learning-section__meta > span {
+  color: #1d4ed8;
+  font-size: 1rem;
+  font-weight: 700;
 }
 
 .learning-section ul {

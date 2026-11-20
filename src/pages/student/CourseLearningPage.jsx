@@ -11,6 +11,7 @@ import {
   getAvailableLessons,
   getLearningProgress,
   getLessonNavigation,
+  getSectionProgress,
 } from "../../utils/learningNavigation.js";
 import CourseReviewForm from "./CourseReviewForm.jsx";
 import "./StudentLibraryPages.css";
@@ -68,6 +69,7 @@ function CourseLearningPage() {
   const isAuthenticated = Boolean(window.localStorage.getItem("accessToken"));
   const [course, setCourse] = useState(null);
   const [activeLessonKey, setActiveLessonKey] = useState("");
+  const [collapsedSections, setCollapsedSections] = useState(() => new Set());
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
   const [userId, setUserId] = useState("");
@@ -84,6 +86,7 @@ function CourseLearningPage() {
       setErrorMessage("");
       setCourse(null);
       setActiveLessonKey("");
+      setCollapsedSections(new Set());
       setUserId("");
       setCompletedLessonIds(new Set());
       setProgressError("");
@@ -159,6 +162,40 @@ function CourseLearningPage() {
   const activeLessonId = activeLesson?.id ?? activeLesson?._id;
   const isActiveLessonComplete =
     activeLessonId != null && completedLessonIds.has(String(activeLessonId));
+  const allSectionsCollapsed =
+    sections.length > 0 &&
+    sections.every((_, index) => collapsedSections.has(index));
+
+  function toggleSection(index) {
+    setCollapsedSections((current) => {
+      const next = new Set(current);
+      if (next.has(index)) {
+        next.delete(index);
+      } else {
+        next.add(index);
+      }
+      return next;
+    });
+  }
+
+  function toggleAllSections() {
+    setCollapsedSections(
+      allSectionsCollapsed
+        ? new Set()
+        : new Set(sections.map((_, index) => index)),
+    );
+  }
+
+  function selectLessonKey(lessonKey) {
+    const sectionIndex = Number(lessonKey.split("-")[0]);
+    setActiveLessonKey(lessonKey);
+    setCollapsedSections((current) => {
+      if (!current.has(sectionIndex)) return current;
+      const next = new Set(current);
+      next.delete(sectionIndex);
+      return next;
+    });
+  }
 
   async function retryProgressLoad() {
     setProgressError("");
@@ -283,14 +320,53 @@ function CourseLearningPage() {
                   aria-label="Danh sách bài học"
                   className="learning-sidebar"
                 >
-                  <h2>Nội dung khóa học</h2>
+                  <div className="learning-sidebar__header">
+                    <h2>Nội dung khóa học</h2>
+                    <button
+                      aria-label={
+                        allSectionsCollapsed
+                          ? "Mở tất cả phần"
+                          : "Thu gọn tất cả phần"
+                      }
+                      className="learning-sidebar__toggle-all"
+                      onClick={toggleAllSections}
+                      type="button"
+                    >
+                      {allSectionsCollapsed ? "Mở tất cả" : "Thu gọn"}
+                    </button>
+                  </div>
                   {sections.map((section, index) => (
                     <section
                       className="learning-section"
                       key={section.id ?? section._id ?? index}
                     >
-                      <h3>{section.title || `Phần ${index + 1}`}</h3>
-                      <ul>
+                      <h3>
+                        <button
+                          aria-controls={`learning-section-${index}`}
+                          aria-expanded={!collapsedSections.has(index)}
+                          className="learning-section__toggle"
+                          onClick={() => toggleSection(index)}
+                          type="button"
+                        >
+                          <span>{section.title || `Phần ${index + 1}`}</span>
+                          <span className="learning-section__meta">
+                            {section.lessons.length} bài
+                            <span aria-hidden="true">
+                              {collapsedSections.has(index) ? "+" : "−"}
+                            </span>
+                          </span>
+                        </button>
+                      </h3>
+                      {userId && !progressError && (
+                        <SectionProgress
+                          completedLessonIds={completedLessonIds}
+                          section={section}
+                        />
+                      )}
+                      <ul
+                        hidden={collapsedSections.has(index)}
+                        id={`learning-section-${index}`}
+                      >
                         {section.lessons.map((lesson, lessonIndex) => {
                           const lessonId =
                             lesson.id ?? lesson._id ?? `${index}-${lessonIndex}`;
@@ -306,7 +382,7 @@ function CourseLearningPage() {
                                 aria-current={isActive ? "step" : undefined}
                                 className={`learning-lesson${isActive ? " is-active" : ""}${isComplete ? " is-complete" : ""}`}
                                 disabled={lesson.isLocked}
-                                onClick={() => setActiveLessonKey(lessonKey)}
+                                onClick={() => selectLessonKey(lessonKey)}
                                 type="button"
                               >
                                 <span>
@@ -408,7 +484,9 @@ function CourseLearningPage() {
                         >
                           <button
                             disabled={!navigation.previous}
-                            onClick={() => setActiveLessonKey(navigation.previous.key)}
+                            onClick={() =>
+                              selectLessonKey(navigation.previous.key)
+                            }
                             type="button"
                           >
                             ← Bài trước
@@ -418,7 +496,7 @@ function CourseLearningPage() {
                           </span>
                           <button
                             disabled={!navigation.next}
-                            onClick={() => setActiveLessonKey(navigation.next.key)}
+                            onClick={() => selectLessonKey(navigation.next.key)}
                             type="button"
                           >
                             Bài tiếp theo →
@@ -443,6 +521,35 @@ function CourseLearningPage() {
         )}
       </section>
     </main>
+  );
+}
+
+function SectionProgress({ section, completedLessonIds }) {
+  const progress = getSectionProgress(section, completedLessonIds);
+
+  return (
+    <div className="learning-section-progress">
+      <div className="learning-section-progress__label">
+        <span>
+          {progress
+            ? `${progress.completed}/${progress.total} bài hoàn thành`
+            : "Chưa có bài học khả dụng"}
+        </span>
+        {progress && <span>{progress.percentage}%</span>}
+      </div>
+      {progress && (
+        <div
+          aria-label={`Hoàn thành ${progress.percentage}% phần học`}
+          aria-valuemax="100"
+          aria-valuemin="0"
+          aria-valuenow={progress.percentage}
+          className="learning-section-progress__track"
+          role="progressbar"
+        >
+          <span style={{ width: `${progress.percentage}%` }} />
+        </div>
+      )}
+    </div>
   );
 }
 
