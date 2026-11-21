@@ -411,8 +411,48 @@
   color: #047857;
 }
 
-.my-reviews__filter {
-  max-width: 260px;
+.my-reviews__summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 16px;
+  margin: 0 0 18px;
+  padding: 14px 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.my-reviews__summary > strong {
+  color: #a16207;
+  font-size: 1.8rem;
+  line-height: 1;
+}
+
+.my-reviews__summary > span {
+  color: #475569;
+  font-size: 0.85rem;
+}
+
+.my-reviews__summary > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.my-reviews__summary > div span {
+  padding: 4px 7px;
+  border-radius: 999px;
+  background: #fffbeb;
+  color: #92400e;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.my-reviews__toolbar {
+  grid-template-columns: minmax(0, 1fr) repeat(2, minmax(160px, 220px));
+  margin-bottom: 24px;
 }
 
 .course-review-form {
@@ -501,14 +541,6 @@
 
 .course-review-form .course-review-form__error {
   color: #b91c1c;
-}
-
-.my-reviews__filter label {
-  display: grid;
-  gap: 8px;
-  color: #334155;
-  font-size: 0.9rem;
-  font-weight: 600;
 }
 
 .my-reviews__list {
@@ -1665,6 +1697,11 @@
 
   .library-toolbar {
     grid-template-columns: 1fr;
+  }
+
+  .my-reviews__summary > div {
+    width: 100%;
+    margin-left: 0;
   }
 
   .profile-form__grid {

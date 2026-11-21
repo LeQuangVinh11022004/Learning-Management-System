@@ -29,7 +29,8 @@ The production application is hosted on Vercel:
 
 - Account registration, sign-in, email OTP verification, and password recovery.
 - Course catalog with search, filters, price sorting, curriculum, and reviews;
-  learners can submit and manage their own course reviews.
+  learners can search, filter, and sort course reviews, then submit and manage
+  their own reviews.
 - Wishlist, shopping cart, and wallet checkout.
 - Enrolled course library, lesson video viewing, and navigation between
   available lessons.

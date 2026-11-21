@@ -7,6 +7,10 @@ import {
 } from "../../api/courseApi.js";
 import { fetchCurrentUser } from "../../api/studentLibraryApi.js";
 import { getApiErrorMessage } from "../../utils/getApiErrorMessage.js";
+import {
+  filterAndSortReviews,
+  getReviewSummary,
+} from "../../utils/reviewManagement.js";
 import "./StudentLibraryPages.css";
 
 const PAGE_SIZE = 5;
@@ -15,6 +19,8 @@ function MyReviewsPage() {
   const navigate = useNavigate();
   const [reviews, setReviews] = useState([]);
   const [filterRating, setFilterRating] = useState("all");
+  const [search, setSearch] = useState("");
+  const [sortOrder, setSortOrder] = useState("newest");
   const [page, setPage] = useState(1);
   const [editingReviewId, setEditingReviewId] = useState("");
   const [editForm, setEditForm] = useState({ rating: 5, comment: "" });
@@ -54,12 +60,15 @@ function MyReviewsPage() {
     loadReviews();
   }, [loadReviews, navigate]);
 
+  const reviewSummary = useMemo(() => getReviewSummary(reviews), [reviews]);
   const filteredReviews = useMemo(
     () =>
-      filterRating === "all"
-        ? reviews
-        : reviews.filter((review) => Number(review.rating) === Number(filterRating)),
-    [filterRating, reviews],
+      filterAndSortReviews(reviews, {
+        rating: filterRating,
+        search,
+        sort: sortOrder,
+      }),
+    [filterRating, reviews, search, sortOrder],
   );
   const totalPages = Math.ceil(filteredReviews.length / PAGE_SIZE);
   const visibleReviews = filteredReviews.slice(
@@ -69,6 +78,16 @@ function MyReviewsPage() {
 
   function changeFilter(event) {
     setFilterRating(event.target.value);
+    setPage(1);
+  }
+
+  function changeSearch(event) {
+    setSearch(event.target.value);
+    setPage(1);
+  }
+
+  function changeSortOrder(event) {
+    setSortOrder(event.target.value);
     setPage(1);
   }
 
@@ -180,16 +199,50 @@ function MyReviewsPage() {
           </span>
         </div>
 
-        <div className="library-toolbar library-toolbar--single my-reviews__filter">
+        <div className="my-reviews__summary">
+          <strong>
+            {reviewSummary.average === null
+              ? "—"
+              : reviewSummary.average.toFixed(1)}
+          </strong>
+          <span>
+            Điểm trung bình từ {reviewSummary.count} đánh giá hợp lệ
+          </span>
+          <div>
+            {reviewSummary.distribution.map(({ rating, count }) => (
+              <span key={rating}>{rating}★ {count}</span>
+            ))}
+          </div>
+        </div>
+
+        <div className="library-toolbar my-reviews__toolbar">
           <label>
-            Lọc theo số sao
+            <span className="visually-hidden">Tìm trong đánh giá của bạn</span>
+            <input
+              onChange={changeSearch}
+              placeholder="Tìm nhận xét hoặc khóa học"
+              type="search"
+              value={search}
+            />
+          </label>
+          <label>
+            <span className="visually-hidden">Lọc theo số sao</span>
             <select onChange={changeFilter} value={filterRating}>
               <option value="all">Tất cả đánh giá</option>
-              {[5, 4, 3, 2, 1].map((rating) => (
+              {reviewSummary.distribution.map(({ rating, count }) => (
                 <option key={rating} value={rating}>
-                  {rating} sao
+                  {rating} sao ({count})
                 </option>
               ))}
+            </select>
+          </label>
+          <label>
+            <span className="visually-hidden">Sắp xếp đánh giá</span>
+            <select onChange={changeSortOrder} value={sortOrder}>
+              <option value="newest">Mới nhất</option>
+              <option value="oldest">Cũ nhất</option>
+              <option value="rating-high">Điểm cao trước</option>
+              <option value="rating-low">Điểm thấp trước</option>
             </select>
           </label>
         </div>
@@ -222,7 +275,7 @@ function MyReviewsPage() {
             </h2>
             <p>
               {reviews.length
-                ? "Hãy chọn một mức sao khác để xem đánh giá."
+                ? "Thử đổi từ khóa tìm kiếm hoặc bộ lọc số sao."
                 : "Đánh giá khóa học bạn đã tham gia để chia sẻ trải nghiệm."}
             </p>
             {!reviews.length && (
