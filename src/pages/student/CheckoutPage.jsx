@@ -6,9 +6,14 @@ import {
   fetchCurrentUser,
 } from "../../api/studentLibraryApi.js";
 import { getApiErrorMessage } from "../../utils/getApiErrorMessage.js";
+import {
+  getCartTotal,
+  getCoursePrice,
+} from "../../utils/cartPricing.js";
 import "./StudentLibraryPages.css";
 
 function formatPrice(value) {
+  if (value == null || value === "") return "Không xác định";
   const price = Number(value);
   if (!Number.isFinite(price)) return "Không xác định";
 
@@ -17,21 +22,6 @@ function formatPrice(value) {
     currency: "VND",
     maximumFractionDigits: 0,
   }).format(price);
-}
-
-function getCoursePrice(course) {
-  const directPrice = Number(course.priceDiscount ?? course.discountPrice);
-  if (Number.isFinite(directPrice) && directPrice >= 0) {
-    return directPrice;
-  }
-
-  const price = Number(course.price);
-  const discount = Number(course.discount ?? 0);
-
-  if (!Number.isFinite(price) || price < 0) return Number.NaN;
-  if (!Number.isFinite(discount) || discount <= 0) return price;
-
-  return price * (1 - Math.min(discount, 100) / 100);
 }
 
 function CheckoutPage() {
@@ -76,12 +66,13 @@ function CheckoutPage() {
   }, [loadCheckout, navigate]);
 
   const total = useMemo(
-    () => courses.reduce((sum, course) => sum + getCoursePrice(course), 0),
+    () => getCartTotal(courses),
     [courses],
   );
   const balance = Number(user?.balance);
   const hasValidBalance = Number.isFinite(balance) && balance >= 0;
-  const hasEnoughBalance = hasValidBalance && balance >= total;
+  const hasValidPrices = total !== null;
+  const hasEnoughBalance = hasValidBalance && hasValidPrices && balance >= total;
 
   async function handleCheckout() {
     if (courses.length === 0 || !hasValidBalance || !hasEnoughBalance) {
@@ -243,7 +234,12 @@ function CheckoutPage() {
                         : "Không xác định"}
                     </strong>
                   </div>
-                  {!hasValidBalance ? (
+                  {!hasValidPrices ? (
+                    <p className="checkout-summary__warning" role="alert">
+                      Không xác định được giá của một hoặc nhiều khóa học.
+                      Vui lòng chỉnh sửa giỏ hàng trước khi thanh toán.
+                    </p>
+                  ) : !hasValidBalance ? (
                     <p className="checkout-summary__warning" role="alert">
                       Không đọc được số dư ví. Vui lòng tải lại trang hoặc thử
                       lại sau.

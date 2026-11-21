@@ -109,6 +109,73 @@
   grid-template-columns: minmax(0, 1fr) minmax(160px, 220px) minmax(160px, 220px);
 }
 
+.wishlist-bulk-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding: 14px 16px;
+  border: 1px solid #dbeafe;
+  border-radius: 12px;
+  background: #eff6ff;
+  color: #334155;
+  font-size: 0.88rem;
+}
+
+.wishlist-bulk-toolbar label,
+.wishlist-course-select {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #334155;
+  cursor: pointer;
+  font-size: 0.84rem;
+  font-weight: 600;
+}
+
+.wishlist-bulk-toolbar input,
+.wishlist-course-select input {
+  width: 16px;
+  height: 16px;
+  accent-color: #2563eb;
+}
+
+.wishlist-bulk-toolbar > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.wishlist-bulk-toolbar button {
+  min-height: 36px;
+  padding: 0 11px;
+  border: 1px solid #2563eb;
+  border-radius: 8px;
+  background: #2563eb;
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.wishlist-bulk-toolbar button.is-danger {
+  border-color: #fecdd3;
+  background: #fff1f2;
+  color: #be123c;
+}
+
+.wishlist-bulk-toolbar button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.wishlist-course-select {
+  margin-bottom: 10px;
+}
+
 .enrollment-filters {
   display: flex;
   flex-wrap: wrap;
@@ -1309,14 +1376,36 @@
   font-size: 0.84rem;
 }
 
-.cart-item__remove {
+.cart-item__remove,
+.cart-item__save-for-later {
+  display: block;
+  margin-top: 8px;
   padding: 0;
+  border: 0;
   background: transparent;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.8rem;
 }
 
-.cart-item__remove:hover:not(:disabled) {
+.cart-item__remove {
+  color: #be123c;
+}
+
+.cart-item__save-for-later {
+  color: #1d4ed8;
+}
+
+.cart-item__remove:hover:not(:disabled),
+.cart-item__save-for-later:hover:not(:disabled) {
   background: transparent;
   text-decoration: underline;
+}
+
+.cart-item__remove:disabled,
+.cart-item__save-for-later:disabled {
+  cursor: wait;
+  opacity: 0.6;
 }
 
 .cart-item__price {

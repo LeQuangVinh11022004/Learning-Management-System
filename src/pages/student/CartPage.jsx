@@ -1,13 +1,17 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
+  addBookmark,
   fetchCart,
   removeCourseFromCart,
 } from "../../api/studentLibraryApi.js";
 import { getApiErrorMessage } from "../../utils/getApiErrorMessage.js";
+import { getCartTotal, getCoursePrice } from "../../utils/cartPricing.js";
+import { saveCartCourseForLater } from "../../utils/cartWishlistAction.js";
 import "./StudentLibraryPages.css";
 
 function formatPrice(value) {
+  if (value == null || value === "") return "Không xác định";
   const price = Number(value);
   if (!Number.isFinite(price)) return "Liên hệ";
 
@@ -18,19 +22,8 @@ function formatPrice(value) {
   }).format(price);
 }
 
-function getDiscountedPrice(course) {
-  const directPrice = Number(course.priceDiscount ?? course.discountPrice);
-  if (Number.isFinite(directPrice) && directPrice >= 0) {
-    return directPrice;
-  }
-
-  const price = Number(course.price);
-  const discount = Number(course.discount ?? 0);
-
-  if (!Number.isFinite(price) || price < 0) return 0;
-  if (!Number.isFinite(discount) || discount <= 0) return price;
-
-  return price * (1 - Math.min(discount, 100) / 100);
+function getCourseId(course) {
+  return course?.id ?? course?._id;
 }
 
 function CartPage() {
@@ -38,7 +31,10 @@ function CartPage() {
   const [courses, setCourses] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [removingId, setRemovingId] = useState(null);
+  const [savingForLaterId, setSavingForLaterId] = useState(null);
   const [errorMessage, setErrorMessage] = useState("");
+  const [actionErrorMessage, setActionErrorMessage] = useState("");
+  const [actionStatusMessage, setActionStatusMessage] = useState("");
 
   const loadCart = useCallback(async () => {
     setIsLoading(true);
@@ -65,7 +61,7 @@ function CartPage() {
   }, [loadCart, navigate]);
 
   const total = useMemo(
-    () => courses.reduce((sum, course) => sum + getDiscountedPrice(course), 0),
+    () => getCartTotal(courses),
     [courses],
   );
 
@@ -76,7 +72,9 @@ function CartPage() {
     try {
       await removeCourseFromCart(courseId);
       setCourses((currentCourses) =>
-        currentCourses.filter((course) => course.id !== courseId),
+        currentCourses.filter(
+          (course) => String(getCourseId(course)) !== String(courseId),
+        ),
       );
     } catch (error) {
       setErrorMessage(
@@ -84,6 +82,42 @@ function CartPage() {
       );
     } finally {
       setRemovingId(null);
+    }
+  }
+
+  async function handleSaveForLater(courseId) {
+    setSavingForLaterId(courseId);
+    setActionErrorMessage("");
+    setActionStatusMessage("");
+
+    try {
+      const result = await saveCartCourseForLater(
+        courseId,
+        addBookmark,
+        removeCourseFromCart,
+      );
+
+      if (result.status === "moved") {
+        setCourses((currentCourses) =>
+          currentCourses.filter(
+            (course) => String(getCourseId(course)) !== String(courseId),
+          ),
+        );
+        setActionStatusMessage("Đã chuyển khóa học vào danh sách yêu thích.");
+      } else {
+        setActionErrorMessage(
+          `Đã lưu vào yêu thích nhưng chưa thể xóa khỏi giỏ hàng. ${getApiErrorMessage(
+            result.removalError,
+            "Vui lòng thử lại.",
+          )}`,
+        );
+      }
+    } catch (error) {
+      setActionErrorMessage(
+        getApiErrorMessage(error, "Không thể lưu khóa học để học sau."),
+      );
+    } finally {
+      setSavingForLaterId(null);
     }
   }
 
@@ -128,6 +162,16 @@ function CartPage() {
             <button disabled={isLoading} onClick={loadCart} type="button">
               Thử lại
             </button>
+          </div>
+        )}
+        {actionStatusMessage && (
+          <p aria-live="polite" className="profile-success" role="status">
+            {actionStatusMessage}
+          </p>
+        )}
+        {actionErrorMessage && (
+          <div className="library-error" role="alert">
+            <p>{actionErrorMessage}</p>
           </div>
         )}
 
@@ -184,7 +228,10 @@ function CartPage() {
                       </p>
                       <button
                         className="cart-item__remove"
-                        disabled={removingId === courseId}
+                        disabled={
+                          removingId === courseId ||
+                          savingForLaterId === courseId
+                        }
                         onClick={() => handleRemove(courseId)}
                         type="button"
                       >
@@ -192,9 +239,22 @@ function CartPage() {
                           ? "Đang xóa..."
                           : "Xóa khỏi giỏ hàng"}
                       </button>
+                      <button
+                        className="cart-item__save-for-later"
+                        disabled={
+                          removingId === courseId ||
+                          savingForLaterId === courseId
+                        }
+                        onClick={() => handleSaveForLater(courseId)}
+                        type="button"
+                      >
+                        {savingForLaterId === courseId
+                          ? "Đang lưu..."
+                          : "Lưu để xem sau"}
+                      </button>
                     </div>
                     <strong className="cart-item__price">
-                      {formatPrice(getDiscountedPrice(course))}
+                      {formatPrice(getCoursePrice(course))}
                     </strong>
                   </article>
                 );
@@ -211,9 +271,15 @@ function CartPage() {
                 <span>Tổng cộng</span>
                 <strong>{formatPrice(total)}</strong>
               </div>
-              <Link className="library-primary-link" to="/checkout">
-                Tiếp tục thanh toán
-              </Link>
+              {total === null ? (
+                <p className="checkout-summary__warning" role="alert">
+                  Có khóa học chưa có giá hợp lệ nên chưa thể thanh toán.
+                </p>
+              ) : (
+                <Link className="library-primary-link" to="/checkout">
+                  Tiếp tục thanh toán
+                </Link>
+              )}
               <p>
                 Bạn cần đăng nhập bằng tài khoản học viên trước khi thanh toán.
               </p>

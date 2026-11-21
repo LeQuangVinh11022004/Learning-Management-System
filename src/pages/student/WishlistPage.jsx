@@ -1,12 +1,14 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
+  addCourseToCart,
   fetchBookmarks,
   removeBookmark,
 } from "../../api/studentLibraryApi.js";
 import { getCatalogCategories } from "../../utils/courseCatalogFilters.js";
 import { getCatalogPrice } from "../../utils/courseSorting.js";
 import { getApiErrorMessage } from "../../utils/getApiErrorMessage.js";
+import { runWishlistBatchAction } from "../../utils/wishlistBatchActions.js";
 import "./StudentLibraryPages.css";
 
 const PAGE_SIZE = 6;
@@ -40,7 +42,11 @@ function WishlistPage() {
   const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [removingId, setRemovingId] = useState(null);
+  const [selectedCourseIds, setSelectedCourseIds] = useState(() => new Set());
+  const [isBulkActionPending, setIsBulkActionPending] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [bulkErrorMessage, setBulkErrorMessage] = useState("");
+  const [bulkStatusMessage, setBulkStatusMessage] = useState("");
 
   const loadBookmarks = useCallback(async () => {
     setIsLoading(true);
@@ -49,6 +55,7 @@ function WishlistPage() {
     try {
       const result = await fetchBookmarks();
       setBookmarks(result);
+      setSelectedCourseIds(new Set());
     } catch (error) {
       setErrorMessage(
         getApiErrorMessage(error, "Không thể tải danh sách yêu thích."),
@@ -108,6 +115,13 @@ function WishlistPage() {
     (page - 1) * PAGE_SIZE,
     page * PAGE_SIZE,
   );
+  const visibleCourseIds = visibleBookmarks
+    .map(getCourseId)
+    .filter((courseId) => courseId != null)
+    .map(String);
+  const areVisibleCoursesSelected =
+    visibleCourseIds.length > 0 &&
+    visibleCourseIds.every((courseId) => selectedCourseIds.has(courseId));
 
   useEffect(() => {
     if (page > totalPages) setPage(Math.max(totalPages, 1));
@@ -124,6 +138,11 @@ function WishlistPage() {
           (bookmark) => String(getCourseId(bookmark)) !== String(courseId),
         ),
       );
+      setSelectedCourseIds((current) => {
+        const next = new Set(current);
+        next.delete(String(courseId));
+        return next;
+      });
     } catch (error) {
       setErrorMessage(
         getApiErrorMessage(error, "Không thể xóa khóa học khỏi yêu thích."),
@@ -131,6 +150,96 @@ function WishlistPage() {
     } finally {
       setRemovingId(null);
     }
+  }
+
+  function toggleCourseSelection(courseId) {
+    setSelectedCourseIds((current) => {
+      const next = new Set(current);
+      const normalizedId = String(courseId);
+      if (next.has(normalizedId)) {
+        next.delete(normalizedId);
+      } else {
+        next.add(normalizedId);
+      }
+      return next;
+    });
+  }
+
+  function toggleVisibleCourseSelection() {
+    setSelectedCourseIds((current) => {
+      const next = new Set(current);
+      if (areVisibleCoursesSelected) {
+        visibleCourseIds.forEach((courseId) => next.delete(courseId));
+      } else {
+        visibleCourseIds.forEach((courseId) => next.add(courseId));
+      }
+      return next;
+    });
+  }
+
+  async function handleBulkAction(action) {
+    const courseIds = [...selectedCourseIds];
+    if (courseIds.length === 0 || isBulkActionPending) return;
+
+    setIsBulkActionPending(true);
+    setBulkErrorMessage("");
+    setBulkStatusMessage("");
+
+    try {
+      const results = await runWishlistBatchAction(
+        courseIds,
+        action === "remove" ? removeBookmark : addCourseToCart,
+      );
+      const successfulIds = results
+        .filter((result) => result.status === "fulfilled")
+        .map((result) => String(result.courseId));
+      const failedResults = results.filter(
+        (result) => result.status === "rejected",
+      );
+
+      if (action === "remove" && successfulIds.length > 0) {
+        setBookmarks((current) =>
+          current.filter(
+            (bookmark) => !successfulIds.includes(String(getCourseId(bookmark))),
+          ),
+        );
+      }
+
+      setSelectedCourseIds(
+        new Set(failedResults.map((result) => String(result.courseId))),
+      );
+
+      if (successfulIds.length > 0) {
+        setBulkStatusMessage(
+          action === "remove"
+            ? `Đã xóa ${successfulIds.length} khóa học khỏi danh sách yêu thích.`
+            : `Đã thêm ${successfulIds.length} khóa học vào giỏ hàng.`,
+        );
+      }
+
+      if (failedResults.length > 0) {
+        const actionLabel =
+          action === "remove" ? "xóa khỏi yêu thích" : "thêm vào giỏ hàng";
+        setBulkErrorMessage(
+          `${failedResults.length} khóa học không thể ${actionLabel}. ${getApiErrorMessage(
+            failedResults[0].reason,
+            "Vui lòng thử lại.",
+          )}`,
+        );
+      }
+    } catch (error) {
+      setBulkErrorMessage(
+        getApiErrorMessage(error, "Không thể hoàn tất thao tác hàng loạt."),
+      );
+    } finally {
+      setIsBulkActionPending(false);
+    }
+  }
+
+  function clearSelectionAndFeedback() {
+    setSelectedCourseIds(new Set());
+    setBulkErrorMessage("");
+    setBulkStatusMessage("");
   }
 
   function changePage(nextPage) {
@@ -180,6 +289,7 @@ function WishlistPage() {
               onChange={(event) => {
                 setSearch(event.target.value);
                 setPage(1);
+                clearSelectionAndFeedback();
               }}
               placeholder="Tìm khóa học"
               type="search"
@@ -192,6 +302,7 @@ function WishlistPage() {
               onChange={(event) => {
                 setSelectedCategory(event.target.value);
                 setPage(1);
+                clearSelectionAndFeedback();
               }}
               value={selectedCategory}
             >
@@ -252,59 +363,111 @@ function WishlistPage() {
             </Link>
           </div>
         ) : (
-          <div className="library-grid">
-            {visibleBookmarks.map((bookmark) => {
-              const course = getCourse(bookmark);
-              const courseId = getCourseId(bookmark);
+          <>
+            <div className="wishlist-bulk-toolbar">
+              <label>
+                <input
+                  checked={areVisibleCoursesSelected}
+                  disabled={isBulkActionPending}
+                  onChange={toggleVisibleCourseSelection}
+                  type="checkbox"
+                />
+                Chọn khóa học trong trang này
+              </label>
+              <span aria-live="polite">
+                Đã chọn {selectedCourseIds.size} khóa học
+              </span>
+              <div>
+                <button
+                  disabled={selectedCourseIds.size === 0 || isBulkActionPending || Boolean(removingId)}
+                  onClick={() => handleBulkAction("cart")}
+                  type="button"
+                >
+                  {isBulkActionPending ? "Đang xử lý..." : "Thêm đã chọn vào giỏ"}
+                </button>
+                <button
+                  className="is-danger"
+                  disabled={selectedCourseIds.size === 0 || isBulkActionPending || Boolean(removingId)}
+                  onClick={() => handleBulkAction("remove")}
+                  type="button"
+                >
+                  Xóa đã chọn
+                </button>
+              </div>
+            </div>
+            {bulkStatusMessage && (
+              <p aria-live="polite" className="profile-success" role="status">
+                {bulkStatusMessage}
+              </p>
+            )}
+            {bulkErrorMessage && (
+              <div className="library-error" role="alert">
+                {bulkErrorMessage}
+              </div>
+            )}
+            <div className="library-grid">
+              {visibleBookmarks.map((bookmark) => {
+                const course = getCourse(bookmark);
+                const courseId = getCourseId(bookmark);
 
-              if (!courseId) return null;
+                if (!courseId) return null;
 
-              return (
-                <article className="library-course-card" key={courseId}>
-                  <Link
-                    aria-label={`Xem khóa học ${course.title}`}
-                    className="library-course-card__image-link"
-                    to={`/course-detail/${encodeURIComponent(courseId)}`}
-                  >
-                    {course.imageUrl ? (
-                      <img alt="" loading="lazy" src={course.imageUrl} />
-                    ) : (
-                      <span aria-hidden="true">LMS</span>
-                    )}
-                  </Link>
-                  <div className="library-course-card__body">
-                    <p className="library-course-card__category">
-                      {course.category?.name || "Khóa học"}
-                    </p>
-                    <h2>
-                      <Link
-                        to={`/course-detail/${encodeURIComponent(courseId)}`}
-                      >
-                        {course.title || "Khóa học"}
-                      </Link>
-                    </h2>
-                    <p className="library-course-card__description">
-                      {course.description || "Xem chi tiết nội dung khóa học."}
-                    </p>
-                    <div className="library-course-card__footer">
-                      <strong>
-                        {formatPrice(
-                          course.priceDiscount ?? course.price ?? course.discountPrice,
-                        )}
-                      </strong>
-                      <button
-                        disabled={removingId === courseId}
-                        onClick={() => handleRemove(courseId)}
-                        type="button"
-                      >
-                        {removingId === courseId ? "Đang xóa..." : "Bỏ yêu thích"}
-                      </button>
+                return (
+                  <article className="library-course-card" key={courseId}>
+                    <Link
+                      aria-label={`Xem khóa học ${course.title}`}
+                      className="library-course-card__image-link"
+                      to={`/course-detail/${encodeURIComponent(courseId)}`}
+                    >
+                      {course.imageUrl ? (
+                        <img alt="" loading="lazy" src={course.imageUrl} />
+                      ) : (
+                        <span aria-hidden="true">LMS</span>
+                      )}
+                    </Link>
+                    <div className="library-course-card__body">
+                      <label className="wishlist-course-select">
+                        <input
+                          checked={selectedCourseIds.has(String(courseId))}
+                          disabled={isBulkActionPending || removingId === courseId}
+                          onChange={() => toggleCourseSelection(courseId)}
+                          type="checkbox"
+                        />
+                        Chọn khóa học
+                      </label>
+                      <p className="library-course-card__category">
+                        {course.category?.name || "Khóa học"}
+                      </p>
+                      <h2>
+                        <Link
+                          to={`/course-detail/${encodeURIComponent(courseId)}`}
+                        >
+                          {course.title || "Khóa học"}
+                        </Link>
+                      </h2>
+                      <p className="library-course-card__description">
+                        {course.description || "Xem chi tiết nội dung khóa học."}
+                      </p>
+                      <div className="library-course-card__footer">
+                        <strong>
+                          {formatPrice(
+                            course.priceDiscount ?? course.price ?? course.discountPrice,
+                          )}
+                        </strong>
+                        <button
+                          disabled={removingId === courseId || isBulkActionPending}
+                          onClick={() => handleRemove(courseId)}
+                          type="button"
+                        >
+                          {removingId === courseId ? "Đang xóa..." : "Bỏ yêu thích"}
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                </article>
-              );
-            })}
-          </div>
+                  </article>
+                );
+              })}
+            </div>
+          </>
         )}
         {!isLoading && filteredBookmarks.length > 0 && totalPages > 1 && (
           <nav
