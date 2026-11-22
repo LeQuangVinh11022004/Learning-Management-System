@@ -6,6 +6,7 @@ function getResumeStorageKey(userId, courseId) {
   return `lms:last-viewed:${encodeURIComponent(userId)}:${encodeURIComponent(courseId)}`;
 }
 
+// TODO: Sync resume records with the API so progress is available across devices.
 export function loadLastViewedLesson(storage, userId, courseId) {
   const storedValue = storage.getItem(getResumeStorageKey(userId, courseId));
   if (storedValue === null) return null;

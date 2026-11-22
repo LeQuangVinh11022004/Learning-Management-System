@@ -1,3 +1,4 @@
+// TODO: Distinguish not-started courses when enrollment responses include start dates.
 export function getEnrollmentProgress(enrollment) {
   if (enrollment?.isCompleted === true) return 100;
 

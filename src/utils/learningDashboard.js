@@ -68,6 +68,7 @@ export function getLearningDashboard(enrollments, studyRecords = []) {
   };
 }
 
+// TODO: Add sorting once the dashboard exposes a sort control and activity timestamps.
 export function filterDashboardCourses(courses, { search = "", status = "all" } = {}) {
   const query = search.trim().toLocaleLowerCase("vi");
 

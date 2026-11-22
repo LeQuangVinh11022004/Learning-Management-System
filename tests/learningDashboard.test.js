@@ -84,4 +84,4 @@ test("filters dashboard courses by status and Vietnamese title", () => {
   );
 });
 
-// TODO: Add coverage for empty-search and no-result dashboard filter states.
+// TODO: Add cases for empty search, no results, and restored dashboard filters.
