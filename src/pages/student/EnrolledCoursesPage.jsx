@@ -1,7 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { fetchEnrolledCourses } from "../../api/studentLibraryApi.js";
+import {
+  fetchCurrentUser,
+  fetchEnrolledCourses,
+} from "../../api/studentLibraryApi.js";
 import { getApiErrorMessage } from "../../utils/getApiErrorMessage.js";
+import { loadLastViewedLesson } from "../../utils/learningResume.js";
 import {
   filterEnrollmentsByStatus,
   getEnrollmentProgress,
@@ -17,6 +21,8 @@ function getCourse(enrollment) {
 function EnrolledCoursesPage() {
   const navigate = useNavigate();
   const [enrollments, setEnrollments] = useState([]);
+  const [resumeLessons, setResumeLessons] = useState({});
+  const [resumeError, setResumeError] = useState("");
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("all");
   const [page, setPage] = useState(1);
@@ -26,9 +32,60 @@ function EnrolledCoursesPage() {
   const loadEnrollments = useCallback(async () => {
     setIsLoading(true);
     setErrorMessage("");
+    setResumeError("");
 
     try {
-      setEnrollments(await fetchEnrolledCourses());
+      const [userResult, coursesResult] = await Promise.allSettled([
+        fetchCurrentUser(),
+        fetchEnrolledCourses(),
+      ]);
+      if (coursesResult.status === "rejected") throw coursesResult.reason;
+
+      const result = coursesResult.value;
+      setEnrollments(result);
+      setResumeLessons({});
+
+      if (userResult.status === "rejected") {
+        setResumeError(
+          getApiErrorMessage(
+            userResult.reason,
+            "Không thể tải bài học gần nhất.",
+          ),
+        );
+        return;
+      }
+
+      const currentUser = userResult.value;
+      const userId = currentUser.id ?? currentUser._id;
+      if (!userId) {
+        setResumeError("Không tìm thấy mã tài khoản để tải bài học gần nhất.");
+        return;
+      }
+
+      setResumeError("");
+      const savedLessons = {};
+      for (const enrollment of result) {
+        const course = getCourse(enrollment);
+        const courseId = course?.id ?? course?._id;
+        if (courseId == null) continue;
+
+        try {
+          const lastViewed = loadLastViewedLesson(
+            window.localStorage,
+            String(userId),
+            String(courseId),
+          );
+          if (lastViewed) savedLessons[String(courseId)] = lastViewed;
+        } catch (error) {
+          setResumeError(
+            getApiErrorMessage(
+              error,
+              "Không thể tải bài học gần nhất của một số khóa học.",
+            ),
+          );
+        }
+      }
+      setResumeLessons(savedLessons);
     } catch (error) {
       setErrorMessage(
         getApiErrorMessage(
@@ -100,6 +157,7 @@ function EnrolledCoursesPage() {
           <Link aria-current="page" to="/my-courses">
             Khóa học của tôi
           </Link>
+          <Link to="/study-notes">Ôn tập</Link>
           <Link to="/my-reviews">Đánh giá của tôi</Link>
           <Link to="/profile">Tài khoản</Link>
           <Link to="/wishlist">Yêu thích</Link>
@@ -167,6 +225,11 @@ function EnrolledCoursesPage() {
             </button>
           </div>
         )}
+        {resumeError && (
+          <div className="library-error" role="alert">
+            <p>{resumeError}</p>
+          </div>
+        )}
 
         {isLoading ? (
           <p aria-live="polite" className="library-state">
@@ -202,6 +265,7 @@ function EnrolledCoursesPage() {
                 const course = getCourse(enrollment);
                 const courseId = course?.id ?? course?._id;
                 const progress = getEnrollmentProgress(enrollment);
+                const lastViewed = resumeLessons[String(courseId)];
 
                 if (!courseId) return null;
 
@@ -263,9 +327,11 @@ function EnrolledCoursesPage() {
                       <div className="enrolled-course-card__footer">
                         <span>Đã đăng ký</span>
                         <Link
-                          to={`/course-lesson/${encodeURIComponent(courseId)}`}
+                          to={`/course-lesson/${encodeURIComponent(courseId)}${lastViewed?.navigationKey ? `?lesson=${encodeURIComponent(lastViewed.navigationKey)}` : ""}`}
                         >
-                          Vào học →
+                          {lastViewed?.lessonTitle
+                            ? `Tiếp tục: ${lastViewed.lessonTitle} →`
+                            : "Vào học →"}
                         </Link>
                       </div>
                     </div>

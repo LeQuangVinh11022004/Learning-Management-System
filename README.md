@@ -33,7 +33,8 @@ The production application is hosted on Vercel:
   their own reviews.
 - Wishlist, shopping cart, and wallet checkout.
 - Enrolled course library, lesson video viewing, and navigation between
-  available lessons.
+  available lessons, automatic lesson resumption, and device-local lesson
+  notes and review bookmarks collected in a searchable study page.
 - Student profile viewing and editing.
 
 ## Technology

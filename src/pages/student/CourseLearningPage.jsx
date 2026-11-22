@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useSearchParams } from "react-router-dom";
 import { fetchCourseById } from "../../api/courseApi.js";
 import {
   fetchCurrentUser,
@@ -13,6 +13,14 @@ import {
   getLessonNavigation,
   getSectionProgress,
 } from "../../utils/learningNavigation.js";
+import {
+  loadLearningStudyData,
+  saveLearningStudyData,
+} from "../../utils/learningStudyData.js";
+import {
+  loadLastViewedLesson,
+  saveLastViewedLesson,
+} from "../../utils/learningResume.js";
 import CourseReviewForm from "./CourseReviewForm.jsx";
 import "./StudentLibraryPages.css";
 
@@ -66,6 +74,8 @@ function formatDuration(seconds) {
 
 function CourseLearningPage() {
   const { id } = useParams();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const requestedLessonKey = searchParams.get("lesson") ?? "";
   const isAuthenticated = Boolean(window.localStorage.getItem("accessToken"));
   const [course, setCourse] = useState(null);
   const [activeLessonKey, setActiveLessonKey] = useState("");
@@ -77,6 +87,14 @@ function CourseLearningPage() {
   const [pendingLessonId, setPendingLessonId] = useState("");
   const [progressError, setProgressError] = useState("");
   const [progressMessage, setProgressMessage] = useState("");
+  const [studyData, setStudyData] = useState({});
+  const [noteDraft, setNoteDraft] = useState("");
+  const [noteDraftKey, setNoteDraftKey] = useState("");
+  const [studyError, setStudyError] = useState("");
+  const [studyMessage, setStudyMessage] = useState("");
+  const [lastViewedLesson, setLastViewedLesson] = useState(null);
+  const [resumeLoadedScope, setResumeLoadedScope] = useState("");
+  const [resumeError, setResumeError] = useState("");
 
   useEffect(() => {
     let isCurrent = true;
@@ -150,21 +168,109 @@ function CourseLearningPage() {
   );
   const lessons = sections.flatMap((section) => section.lessons);
   const availableLessons = useMemo(() => getAvailableLessons(sections), [sections]);
+  const requestedLesson = availableLessons.find(
+    ({ key, lesson }) =>
+      key === requestedLessonKey ||
+      String(lesson.id ?? lesson._id ?? key) === requestedLessonKey,
+  );
+  const resumeUserId = userId || "guest";
+  const resumeScope = JSON.stringify([resumeUserId, id]);
+  const resumedLesson = availableLessons.find(
+    ({ key }) => key === lastViewedLesson?.navigationKey,
+  );
   const navigation = getLessonNavigation(
     availableLessons,
-    activeLessonKey,
+    activeLessonKey || requestedLesson?.key || resumedLesson?.key || "",
   );
+  const activeNavigationKey = navigation.current?.key ?? "";
+  const activeNavigationLesson = navigation.current?.lesson ?? null;
   const learningProgress = getLearningProgress(
     availableLessons,
     completedLessonIds,
   );
   const activeLesson = navigation.current?.lesson ?? null;
   const activeLessonId = activeLesson?.id ?? activeLesson?._id;
+  const activeStudyKey =
+    activeLessonId != null
+      ? String(activeLessonId)
+      : navigation.current?.key ?? "";
+  const activeStudyData = studyData[activeStudyKey] ?? {
+    note: "",
+    bookmarked: false,
+  };
+  const activeNoteDraft =
+    noteDraftKey === activeStudyKey ? noteDraft : activeStudyData.note;
   const isActiveLessonComplete =
     activeLessonId != null && completedLessonIds.has(String(activeLessonId));
   const allSectionsCollapsed =
     sections.length > 0 &&
     sections.every((_, index) => collapsedSections.has(index));
+
+  useEffect(() => {
+    setResumeError("");
+
+    try {
+      setLastViewedLesson(
+        loadLastViewedLesson(window.localStorage, resumeUserId, id),
+      );
+    } catch (error) {
+      setResumeError(
+        getApiErrorMessage(error, "Không thể tải bài học gần nhất."),
+      );
+      setLastViewedLesson(null);
+    } finally {
+      setResumeLoadedScope(resumeScope);
+    }
+  }, [id, resumeScope, resumeUserId]);
+
+  useEffect(() => {
+    if (resumeLoadedScope !== resumeScope || !activeNavigationLesson) return;
+
+    const section = sections[Number(activeNavigationKey.split("-")[0])];
+    try {
+      setLastViewedLesson(
+        saveLastViewedLesson(window.localStorage, resumeUserId, id, {
+          navigationKey: activeNavigationKey,
+          lessonId: activeNavigationLesson.id ?? activeNavigationLesson._id,
+          lessonTitle: activeNavigationLesson.title ?? "",
+          sectionTitle: section?.title ?? "",
+        }),
+      );
+      setResumeError("");
+    } catch (error) {
+      setResumeError(
+        getApiErrorMessage(error, "Không thể lưu bài học gần nhất."),
+      );
+    }
+  }, [
+    activeNavigationKey,
+    activeNavigationLesson,
+    id,
+    resumeLoadedScope,
+    resumeScope,
+    resumeUserId,
+    sections,
+  ]);
+
+  useEffect(() => {
+    setStudyData({});
+    setStudyError("");
+    setStudyMessage("");
+
+    try {
+      setStudyData(
+        loadLearningStudyData(
+          window.localStorage,
+          userId || "guest",
+          id,
+        ),
+      );
+    } catch (error) {
+      setStudyError(
+        getApiErrorMessage(error, "Không thể tải ghi chú bài học."),
+      );
+    }
+  }, [id, userId]);
 
   function toggleSection(index) {
     setCollapsedSections((current) => {
@@ -189,12 +295,65 @@ function CourseLearningPage() {
   function selectLessonKey(lessonKey) {
     const sectionIndex = Number(lessonKey.split("-")[0]);
     setActiveLessonKey(lessonKey);
+    setSearchParams({ lesson: lessonKey }, { replace: true });
     setCollapsedSections((current) => {
       if (!current.has(sectionIndex)) return current;
       const next = new Set(current);
       next.delete(sectionIndex);
       return next;
     });
+  }
+
+  function saveStudyEntry(note, bookmarked, successMessage) {
+    if (!activeStudyKey) return;
+
+    try {
+      const nextStudyData = saveLearningStudyData(
+        window.localStorage,
+        userId || "guest",
+        id,
+        activeStudyKey,
+        {
+          note,
+          bookmarked,
+          lessonTitle: activeLesson?.title ?? "",
+          sectionTitle:
+            sections[Number(navigation.current?.key.split("-")[0])]?.title ?? "",
+          navigationKey: navigation.current?.key ?? "",
+        },
+      );
+      setStudyData(nextStudyData);
+      setNoteDraft(note.trim());
+      setNoteDraftKey(activeStudyKey);
+      setStudyError("");
+      setStudyMessage(successMessage);
+    } catch (error) {
+      setStudyError(
+        getApiErrorMessage(error, "Không thể lưu ghi chú bài học."),
+      );
+      setStudyMessage("");
+    }
+  }
+
+  function handleSaveNote() {
+    saveStudyEntry(
+      activeNoteDraft,
+      activeStudyData.bookmarked,
+      activeNoteDraft.trim()
+        ? "Đã lưu ghi chú trên thiết bị này."
+        : "Đã xóa ghi chú bài học.",
+    );
+  }
+
+  function handleToggleLessonBookmark() {
+    const isBookmarked = !activeStudyData.bookmarked;
+    saveStudyEntry(
+      activeNoteDraft,
+      isBookmarked,
+      isBookmarked
+        ? "Đã lưu bài học vào danh sách ôn tập trên thiết bị này."
+        : "Đã bỏ bài học khỏi danh sách ôn tập.",
+    );
   }
 
   async function retryProgressLoad() {
@@ -255,6 +414,7 @@ function CourseLearningPage() {
         <nav aria-label="Điều hướng chính" className="library-header__nav">
           <Link to="/courses">Khóa học</Link>
           <Link to="/my-courses">Khóa học của tôi</Link>
+          <Link to="/study-notes">Ôn tập</Link>
           <Link to="/my-reviews">Đánh giá của tôi</Link>
           <Link to="/profile">Tài khoản</Link>
           <Link to="/wishlist">Yêu thích</Link>
@@ -436,6 +596,70 @@ function CourseLearningPage() {
                         {activeLesson.description && (
                           <p>{activeLesson.description}</p>
                         )}
+                        <section
+                          aria-labelledby="learning-notes-title"
+                          className="learning-notes"
+                        >
+                          <div className="learning-notes__header">
+                            <h3 id="learning-notes-title">Ghi chú bài học</h3>
+                            <button
+                              aria-pressed={activeStudyData.bookmarked}
+                              className={
+                                activeStudyData.bookmarked
+                                  ? "is-bookmarked"
+                                  : ""
+                              }
+                              onClick={handleToggleLessonBookmark}
+                              type="button"
+                            >
+                              {activeStudyData.bookmarked
+                                ? "★ Đã lưu ôn tập"
+                                : "☆ Lưu để ôn tập"}
+                            </button>
+                          </div>
+                          <label>
+                            <span className="visually-hidden">
+                              Ghi chú riêng cho bài học này
+                            </span>
+                            <textarea
+                              maxLength={2000}
+                              onChange={(event) => {
+                                setNoteDraft(event.target.value);
+                                setNoteDraftKey(activeStudyKey);
+                                setStudyMessage("");
+                                setStudyError("");
+                              }}
+                              placeholder="Ghi lại ý chính hoặc câu hỏi cần xem lại..."
+                              rows={4}
+                              value={activeNoteDraft}
+                            />
+                          </label>
+                          <div className="learning-notes__footer">
+                            <span>{activeNoteDraft.length}/2000</span>
+                            <button onClick={handleSaveNote} type="button">
+                              Lưu ghi chú
+                            </button>
+                          </div>
+                          {studyError && (
+                            <p className="learning-progress__error" role="alert">
+                              {studyError}
+                            </p>
+                          )}
+                          {studyMessage && (
+                            <p className="learning-progress__success" role="status">
+                              {studyMessage}
+                            </p>
+                          )}
+                          {resumeError && (
+                            <p className="learning-progress__error" role="alert">
+                              {resumeError}
+                            </p>
+                          )}
+                          <p className="learning-notes__privacy">
+                            Ghi chú và bài đã lưu chỉ được lưu trên thiết bị/trình
+                            duyệt hiện tại.
+                          </p>
+                        </section>
                         {progressError && (
                           <p className="learning-progress__error" role="alert">
                             {progressError}

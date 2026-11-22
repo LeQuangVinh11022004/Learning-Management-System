@@ -10,6 +10,7 @@ import CartPage from "./pages/student/CartPage.jsx";
 import CheckoutPage from "./pages/student/CheckoutPage.jsx";
 import EnrolledCoursesPage from "./pages/student/EnrolledCoursesPage.jsx";
 import CourseLearningPage from "./pages/student/CourseLearningPage.jsx";
+import StudyNotesPage from "./pages/student/StudyNotesPage.jsx";
 import ProfilePage from "./pages/student/ProfilePage.jsx";
 import MyReviewsPage from "./pages/student/MyReviewsPage.jsx";
 import NotFoundPage from "./pages/NotFoundPage.jsx";
@@ -61,6 +62,7 @@ function App() {
         <Route path="/checkout" element={<CheckoutPage />} />
         <Route path="/my-courses" element={<EnrolledCoursesPage />} />
         <Route path="/course-lesson/:id" element={<CourseLearningPage />} />
+        <Route path="/study-notes" element={<StudyNotesPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/my-reviews" element={<MyReviewsPage />} />
         <Route path="*" element={<NotFoundPage />} />
