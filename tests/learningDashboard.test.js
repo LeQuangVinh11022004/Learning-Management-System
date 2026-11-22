@@ -5,8 +5,6 @@ import {
   getLearningDashboard,
 } from "../src/utils/learningDashboard.js";
 
-// TODO: Implement role-aware route protection for Admin and Instructor (#8).
-
 test("summarizes enrollment progress and saved study material", () => {
   const dashboard = getLearningDashboard(
     [
@@ -83,5 +81,3 @@ test("filters dashboard courses by status and Vietnamese title", () => {
     ["2"],
   );
 });
-
-// TODO: Add cases for empty search, no results, and restored dashboard filters.

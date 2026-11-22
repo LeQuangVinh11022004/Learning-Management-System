@@ -21,7 +21,6 @@ function LearningDashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
 
-  // TODO: Keep dashboard search and status in the URL so learners can restore their view.
   const loadDashboard = useCallback(async () => {
     setIsLoading(true);
     setErrorMessage("");
