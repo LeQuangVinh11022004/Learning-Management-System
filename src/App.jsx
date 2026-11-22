@@ -13,6 +13,7 @@ import CourseLearningPage from "./pages/student/CourseLearningPage.jsx";
 import StudyNotesPage from "./pages/student/StudyNotesPage.jsx";
 import ProfilePage from "./pages/student/ProfilePage.jsx";
 import MyReviewsPage from "./pages/student/MyReviewsPage.jsx";
+import LearningDashboardPage from "./pages/student/LearningDashboardPage.jsx";
 import NotFoundPage from "./pages/NotFoundPage.jsx";
 
 function App() {
@@ -61,6 +62,7 @@ function App() {
         <Route path="/cart" element={<CartPage />} />
         <Route path="/checkout" element={<CheckoutPage />} />
         <Route path="/my-courses" element={<EnrolledCoursesPage />} />
+        <Route path="/learning-dashboard" element={<LearningDashboardPage />} />
         <Route path="/course-lesson/:id" element={<CourseLearningPage />} />
         <Route path="/study-notes" element={<StudyNotesPage />} />
         <Route path="/profile" element={<ProfilePage />} />

@@ -413,6 +413,7 @@ function CourseLearningPage() {
         </Link>
         <nav aria-label="Điều hướng chính" className="library-header__nav">
           <Link to="/courses">Khóa học</Link>
+          <Link to="/learning-dashboard">Tổng quan học tập</Link>
           <Link to="/my-courses">Khóa học của tôi</Link>
           <Link to="/study-notes">Ôn tập</Link>
           <Link to="/my-reviews">Đánh giá của tôi</Link>

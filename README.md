@@ -34,7 +34,8 @@ The production application is hosted on Vercel:
 - Wishlist, shopping cart, and wallet checkout.
 - Enrolled course library, lesson video viewing, and navigation between
   available lessons, automatic lesson resumption, and device-local lesson
-  notes and review bookmarks collected in a searchable study page.
+  notes and review bookmarks collected in a searchable study page, with a
+  progress dashboard for enrolled courses.
 - Student profile viewing and editing.
 
 ## Technology
@@ -85,9 +86,10 @@ Vite prints the local development URL in the terminal (usually
 ## CI/CD
 
 GitHub Actions runs lint, tests, and a production build on pull requests and
-pushes to `main`. Vercel Git Integration is the deployment pipeline; a
-separate GitHub Actions deploy job is intentionally not used to avoid duplicate
-deployments:
+pushes to `main`. Successful runs upload the production `dist/` bundle as a
+downloadable artifact for seven days. Vercel Git Integration provides continuous
+deployment; a separate GitHub Actions deploy job is intentionally not used to
+avoid duplicate deployments:
 
 1. Pull requests receive Vercel preview deployments.
 2. Pushes or merges to the Vercel production branch (`main`) trigger production
