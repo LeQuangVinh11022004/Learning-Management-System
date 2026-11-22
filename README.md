@@ -35,7 +35,7 @@ The production application is hosted on Vercel:
 - Enrolled course library, lesson video viewing, and navigation between
   available lessons, automatic lesson resumption, and device-local lesson
   notes and review bookmarks collected in a searchable study page, with a
-  progress dashboard for enrolled courses.
+  progress dashboard for enrolled courses with course search and status filters.
 - Student profile viewing and editing.
 
 ## Technology

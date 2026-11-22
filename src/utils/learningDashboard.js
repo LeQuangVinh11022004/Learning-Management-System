@@ -67,3 +67,17 @@ export function getLearningDashboard(enrollments, studyRecords = []) {
     courses: courses.filter(({ courseId }) => courseId),
   };
 }
+
+export function filterDashboardCourses(courses, { search = "", status = "all" } = {}) {
+  const query = search.trim().toLocaleLowerCase("vi");
+
+  return courses.filter(({ course, progress }) => {
+    const matchesStatus =
+      status === "all" ||
+      (status === "completed" && progress === 100) ||
+      (status === "in-progress" && progress !== 100);
+    const title = (course.title ?? "").toLocaleLowerCase("vi");
+
+    return matchesStatus && (!query || title.includes(query));
+  });
+}

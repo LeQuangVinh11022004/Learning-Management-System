@@ -111,6 +111,7 @@ function CourseDetailPage() {
         </Link>
         <nav aria-label="Điều hướng chính" className="course-page__nav">
           <Link to="/courses">Khóa học</Link>
+          <Link to="/learning-dashboard">Tổng quan học tập</Link>
           <Link to="/wishlist">Yêu thích</Link>
           <Link to="/cart">Giỏ hàng</Link>
           <Link to="/login">Đăng nhập</Link>

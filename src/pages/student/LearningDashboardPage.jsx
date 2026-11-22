@@ -6,13 +6,18 @@ import {
 } from "../../api/studentLibraryApi.js";
 import { getApiErrorMessage } from "../../utils/getApiErrorMessage.js";
 import { listLearningStudyData } from "../../utils/learningStudyData.js";
-import { getLearningDashboard } from "../../utils/learningDashboard.js";
+import { getLearningDashboard, filterDashboardCourses } from "../../utils/learningDashboard.js";
+import { loadLastViewedLesson } from "../../utils/learningResume.js";
 import "./StudentLibraryPages.css";
 
 function LearningDashboardPage() {
   const navigate = useNavigate();
   const [enrollments, setEnrollments] = useState([]);
   const [studyRecords, setStudyRecords] = useState([]);
+  const [resumeLessons, setResumeLessons] = useState({});
+  const [resumeError, setResumeError] = useState("");
+  const [search, setSearch] = useState("");
+  const [status, setStatus] = useState("all");
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -30,6 +35,31 @@ function LearningDashboardPage() {
 
       setEnrollments(courses);
       setStudyRecords(listLearningStudyData(window.localStorage, String(userId)));
+      const savedLessons = {};
+      let firstResumeError = "";
+      for (const enrollment of courses) {
+        const course = enrollment?.course ?? enrollment;
+        const courseId = course?.id ?? course?._id;
+        if (courseId == null) continue;
+
+        try {
+          const lastViewed = loadLastViewedLesson(
+            window.localStorage,
+            String(userId),
+            String(courseId),
+          );
+          if (lastViewed) savedLessons[String(courseId)] = lastViewed;
+        } catch (error) {
+          if (!firstResumeError) {
+            firstResumeError = getApiErrorMessage(
+              error,
+              "Không thể tải bài học gần nhất.",
+            );
+          }
+        }
+      }
+      setResumeLessons(savedLessons);
+      setResumeError(firstResumeError);
     } catch (error) {
       setErrorMessage(
         getApiErrorMessage(error, "Không thể tải tổng quan học tập."),
@@ -51,6 +81,10 @@ function LearningDashboardPage() {
   const dashboard = useMemo(
     () => getLearningDashboard(enrollments, studyRecords),
     [enrollments, studyRecords],
+  );
+  const visibleCourses = useMemo(
+    () => filterDashboardCourses(dashboard.courses, { search, status }),
+    [dashboard.courses, search, status],
   );
 
   return (
@@ -88,6 +122,11 @@ function LearningDashboardPage() {
             <button disabled={isLoading} onClick={loadDashboard} type="button">
               Thử lại
             </button>
+          </div>
+        )}
+        {resumeError && (
+          <div className="library-error" role="alert">
+            <p>{resumeError}</p>
           </div>
         )}
 
@@ -142,6 +181,39 @@ function LearningDashboardPage() {
               <Link to="/my-courses">Xem tất cả khóa học →</Link>
             </div>
 
+            <div className="library-toolbar library-toolbar--study-notes">
+              <label>
+                <span className="visually-hidden">Tìm khóa học trong tổng quan</span>
+                <input
+                  onChange={(event) => setSearch(event.target.value)}
+                  placeholder="Tìm khóa học của bạn"
+                  type="search"
+                  value={search}
+                />
+              </label>
+            </div>
+            <div
+              aria-label="Lọc khóa học trong tổng quan"
+              className="enrollment-filters"
+              role="group"
+            >
+              {[
+                ["all", "Tất cả"],
+                ["in-progress", "Đang học"],
+                ["completed", "Hoàn thành"],
+              ].map(([value, label]) => (
+                <button
+                  aria-pressed={status === value}
+                  className={status === value ? "is-active" : ""}
+                  key={value}
+                  onClick={() => setStatus(value)}
+                  type="button"
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+
             {dashboard.courses.length === 0 ? (
               <div className="library-empty">
                 <h2>Bạn chưa đăng ký khóa học nào</h2>
@@ -150,9 +222,18 @@ function LearningDashboardPage() {
                   Khám phá khóa học
                 </Link>
               </div>
+            ) : visibleCourses.length === 0 ? (
+              <div className="library-empty">
+                <h2>Không tìm thấy khóa học</h2>
+                <p>Thử đổi từ khóa tìm kiếm hoặc trạng thái.</p>
+              </div>
             ) : (
               <div className="learning-dashboard__courses">
-                {dashboard.courses.map(({ course, courseId, progress }) => (
+                {visibleCourses.map(({ course, courseId, progress }) => {
+                  const lastViewed = resumeLessons[courseId];
+                  const courseUrl = `/course-lesson/${encodeURIComponent(courseId)}${lastViewed?.navigationKey ? `?lesson=${encodeURIComponent(lastViewed.navigationKey)}` : ""}`;
+
+                  return (
                   <article key={courseId}>
                     <div className="learning-dashboard__course-heading">
                       <div>
@@ -182,12 +263,17 @@ function LearningDashboardPage() {
                       </div>
                     )}
                     <Link
-                      to={`/course-lesson/${encodeURIComponent(courseId)}`}
+                      to={courseUrl}
                     >
-                      {progress === 100 ? "Ôn lại khóa học →" : "Tiếp tục học →"}
+                      {lastViewed?.lessonTitle
+                        ? `Tiếp tục: ${lastViewed.lessonTitle} →`
+                        : progress === 100
+                          ? "Ôn lại khóa học →"
+                          : "Tiếp tục học →"}
                     </Link>
                   </article>
-                ))}
+                  );
+                })}
               </div>
             )}
           </>
