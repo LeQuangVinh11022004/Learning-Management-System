@@ -21,6 +21,7 @@ import {
   loadLastViewedLesson,
   saveLastViewedLesson,
 } from "../../utils/learningResume.js";
+import { getLearningDashboardReturnPath } from "../../utils/learningDashboardUrl.js";
 import CourseReviewForm from "./CourseReviewForm.jsx";
 import "./StudentLibraryPages.css";
 
@@ -76,6 +77,9 @@ function CourseLearningPage() {
   const { id } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
   const requestedLessonKey = searchParams.get("lesson") ?? "";
+  const dashboardReturnPath = getLearningDashboardReturnPath(
+    searchParams.get("from"),
+  );
   const isAuthenticated = Boolean(window.localStorage.getItem("accessToken"));
   const [course, setCourse] = useState(null);
   const [activeLessonKey, setActiveLessonKey] = useState("");
@@ -295,7 +299,9 @@ function CourseLearningPage() {
   function selectLessonKey(lessonKey) {
     const sectionIndex = Number(lessonKey.split("-")[0]);
     setActiveLessonKey(lessonKey);
-    setSearchParams({ lesson: lessonKey }, { replace: true });
+    const nextSearchParams = new URLSearchParams(searchParams);
+    nextSearchParams.set("lesson", lessonKey);
+    setSearchParams(nextSearchParams, { replace: true });
     setCollapsedSections((current) => {
       if (!current.has(sectionIndex)) return current;
       const next = new Set(current);
@@ -413,7 +419,9 @@ function CourseLearningPage() {
         </Link>
         <nav aria-label="Điều hướng chính" className="library-header__nav">
           <Link to="/courses">Khóa học</Link>
-          <Link to="/learning-dashboard">Tổng quan học tập</Link>
+          <Link to={dashboardReturnPath || "/learning-dashboard"}>
+            Tổng quan học tập
+          </Link>
           <Link to="/my-courses">Khóa học của tôi</Link>
           <Link to="/study-notes">Ôn tập</Link>
           <Link to="/my-reviews">Đánh giá của tôi</Link>

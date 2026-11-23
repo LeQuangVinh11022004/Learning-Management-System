@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
   fetchCurrentUser,
   fetchEnrolledCourses,
@@ -7,19 +7,24 @@ import {
 import { getApiErrorMessage } from "../../utils/getApiErrorMessage.js";
 import { listLearningStudyData } from "../../utils/learningStudyData.js";
 import { getLearningDashboard, filterDashboardCourses } from "../../utils/learningDashboard.js";
+import {
+  getLearningDashboardFilters,
+  getLearningDashboardUrl,
+  updateLearningDashboardSearchParams,
+} from "../../utils/learningDashboardUrl.js";
 import { loadLastViewedLesson } from "../../utils/learningResume.js";
 import "./StudentLibraryPages.css";
 
 function LearningDashboardPage() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [enrollments, setEnrollments] = useState([]);
   const [studyRecords, setStudyRecords] = useState([]);
   const [resumeLessons, setResumeLessons] = useState({});
   const [resumeError, setResumeError] = useState("");
-  const [search, setSearch] = useState("");
-  const [status, setStatus] = useState("all");
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
+  const { search, status } = getLearningDashboardFilters(searchParams);
 
   const loadDashboard = useCallback(async () => {
     setIsLoading(true);
@@ -86,6 +91,17 @@ function LearningDashboardPage() {
     () => filterDashboardCourses(dashboard.courses, { search, status }),
     [dashboard.courses, search, status],
   );
+
+  function updateFilters(nextFilters) {
+    setSearchParams(
+      updateLearningDashboardSearchParams(searchParams, {
+        search,
+        status,
+        ...nextFilters,
+      }),
+      { replace: true },
+    );
+  }
 
   return (
     <main className="library-page">
@@ -185,7 +201,9 @@ function LearningDashboardPage() {
               <label>
                 <span className="visually-hidden">Tìm khóa học trong tổng quan</span>
                 <input
-                  onChange={(event) => setSearch(event.target.value)}
+                  onChange={(event) =>
+                    updateFilters({ search: event.target.value })
+                  }
                   placeholder="Tìm khóa học của bạn"
                   type="search"
                   value={search}
@@ -206,7 +224,7 @@ function LearningDashboardPage() {
                   aria-pressed={status === value}
                   className={status === value ? "is-active" : ""}
                   key={value}
-                  onClick={() => setStatus(value)}
+                  onClick={() => updateFilters({ status: value })}
                   type="button"
                 >
                   {label}
@@ -231,7 +249,12 @@ function LearningDashboardPage() {
               <div className="learning-dashboard__courses">
                 {visibleCourses.map(({ course, courseId, progress }) => {
                   const lastViewed = resumeLessons[courseId];
-                  const courseUrl = `/course-lesson/${encodeURIComponent(courseId)}${lastViewed?.navigationKey ? `?lesson=${encodeURIComponent(lastViewed.navigationKey)}` : ""}`;
+                  const courseParams = new URLSearchParams();
+                  if (lastViewed?.navigationKey) {
+                    courseParams.set("lesson", lastViewed.navigationKey);
+                  }
+                  courseParams.set("from", getLearningDashboardUrl(searchParams));
+                  const courseUrl = `/course-lesson/${encodeURIComponent(courseId)}?${courseParams.toString()}`;
 
                   return (
                   <article key={courseId}>
