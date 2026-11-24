@@ -13,6 +13,7 @@ import {
   updateLearningDashboardSearchParams,
 } from "../../utils/learningDashboardUrl.js";
 import { loadLastViewedLesson } from "../../utils/learningResume.js";
+import StudyPlanPanel from "./StudyPlanPanel.jsx";
 import "./StudentLibraryPages.css";
 
 function LearningDashboardPage() {
@@ -22,6 +23,7 @@ function LearningDashboardPage() {
   const [studyRecords, setStudyRecords] = useState([]);
   const [resumeLessons, setResumeLessons] = useState({});
   const [resumeError, setResumeError] = useState("");
+  const [userId, setUserId] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
   const { search, status } = getLearningDashboardFilters(searchParams);
@@ -38,6 +40,7 @@ function LearningDashboardPage() {
       const userId = user.id ?? user._id;
       if (!userId) throw new Error("Không tìm thấy mã tài khoản.");
 
+      setUserId(String(userId));
       setEnrollments(courses);
       setStudyRecords(listLearningStudyData(window.localStorage, String(userId)));
       const savedLessons = {};
@@ -188,6 +191,10 @@ function LearningDashboardPage() {
                 Mở danh sách ôn tập →
               </Link>
             </section>
+
+            {userId && (
+              <StudyPlanPanel courses={dashboard.courses} userId={userId} />
+            )}
 
             <div className="learning-dashboard__section-heading">
               <div>

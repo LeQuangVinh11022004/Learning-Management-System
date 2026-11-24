@@ -37,6 +37,8 @@ The production application is hosted on Vercel:
   notes and review bookmarks collected in a searchable study page, with a
   progress dashboard for enrolled courses with course search and status filters
   that persist in shareable URLs and are preserved when returning from a lesson.
+  Learners can also set weekly study-minute goals and track scheduled sessions
+  locally on their dashboard.
 - Student profile viewing and editing.
 
 ## Technology
