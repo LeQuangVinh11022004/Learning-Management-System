@@ -5,9 +5,11 @@ function getTodayValue() {
   return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
 }
 
-function StudyPlanSessionForm({ courses, onAdd }) {
+function StudyPlanSessionForm({ courses, defaultDate, onAdd }) {
   const [courseId, setCourseId] = useState("");
-  const [scheduledFor, setScheduledFor] = useState(getTodayValue);
+  const [scheduledFor, setScheduledFor] = useState(
+    defaultDate ?? getTodayValue(),
+  );
   const [durationMinutes, setDurationMinutes] = useState("30");
 
   function handleSubmit(event) {
@@ -24,7 +26,7 @@ function StudyPlanSessionForm({ courses, onAdd }) {
     });
     if (!saved) return;
     setCourseId("");
-    setScheduledFor(getTodayValue());
+    setScheduledFor(defaultDate ?? getTodayValue());
     setDurationMinutes("30");
   }
 

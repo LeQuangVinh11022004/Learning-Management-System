@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   addLearningPlanSession,
+  getLearningPlanDaySummaries,
+  getLearningPlanWeekSessions,
   getLearningPlanWeekSummary,
   loadLearningPlan,
   removeLearningPlanSession,
@@ -10,6 +12,8 @@ import {
 import { getApiErrorMessage } from "../../utils/getApiErrorMessage.js";
 import StudyPlanSessionForm from "./StudyPlanSessionForm.jsx";
 import StudyPlanSessionList from "./StudyPlanSessionList.jsx";
+import StudyPlanWeekCalendar from "./StudyPlanWeekCalendar.jsx";
+import StudyPlanWeekNavigation from "./StudyPlanWeekNavigation.jsx";
 
 function StudyPlanPanel({ userId, courses }) {
   const [plan, setPlan] = useState(null);
@@ -17,6 +21,7 @@ function StudyPlanPanel({ userId, courses }) {
   const [errorMessage, setErrorMessage] = useState("");
   const [goalInput, setGoalInput] = useState("");
   const [reloadCount, setReloadCount] = useState(0);
+  const [weekOffset, setWeekOffset] = useState(0);
 
   useEffect(() => {
     if (!userId) return;
@@ -38,8 +43,16 @@ function StudyPlanPanel({ userId, courses }) {
   }, [reloadCount, userId]);
 
   const summary = useMemo(
-    () => (plan ? getLearningPlanWeekSummary(plan) : null),
-    [plan],
+    () => (plan ? getLearningPlanWeekSummary(plan, new Date(), weekOffset) : null),
+    [plan, weekOffset],
+  );
+  const weekSessions = useMemo(
+    () => (plan ? getLearningPlanWeekSessions(plan, new Date(), weekOffset) : []),
+    [plan, weekOffset],
+  );
+  const daySummaries = useMemo(
+    () => (plan ? getLearningPlanDaySummaries(plan, new Date(), weekOffset) : []),
+    [plan, weekOffset],
   );
 
   function saveUpdatedPlan(update) {
@@ -70,7 +83,7 @@ function StudyPlanPanel({ userId, courses }) {
   }
 
   function addSession(session) {
-    saveUpdatedPlan((storage, id) =>
+    return saveUpdatedPlan((storage, id) =>
       addLearningPlanSession(storage, id, session),
     );
   }
@@ -137,6 +150,17 @@ function StudyPlanPanel({ userId, courses }) {
               : "Bạn đã đạt mục tiêu học tập tuần này!"}
           </p>
 
+          <StudyPlanWeekNavigation
+            onChange={setWeekOffset}
+            weekEnd={summary.weekEnd}
+            weekOffset={weekOffset}
+            weekStart={summary.weekStart}
+          />
+          <StudyPlanWeekCalendar
+            days={daySummaries}
+            weeklyGoalMinutes={summary.weeklyGoalMinutes}
+          />
+
           <form className="study-plan__goal" onSubmit={saveGoal}>
             <label>
               <span>Mục tiêu tuần (phút)</span>
@@ -152,11 +176,16 @@ function StudyPlanPanel({ userId, courses }) {
             <button type="submit">Lưu mục tiêu</button>
           </form>
 
-          <StudyPlanSessionForm courses={courses} onAdd={addSession} />
+          <StudyPlanSessionForm
+            courses={courses}
+            defaultDate={weekOffset === 0 ? undefined : summary.weekStart}
+            key={weekOffset}
+            onAdd={addSession}
+          />
           <StudyPlanSessionList
             onRemove={removeSession}
             onToggle={toggleSession}
-            sessions={plan.sessions}
+            sessions={weekSessions}
           />
         </>
       )}

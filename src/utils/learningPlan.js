@@ -143,19 +143,76 @@ export function removeLearningPlanSession(storage, userId, sessionId) {
   return saveLearningPlan(storage, userId, { ...plan, sessions });
 }
 
-export function getLearningPlanWeekSummary(plan, now = new Date()) {
+export function getLearningPlanWeekRange(now = new Date(), weekOffset = 0) {
   const weekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   weekStart.setDate(weekStart.getDate() - ((weekStart.getDay() + 6) % 7));
+  weekStart.setDate(weekStart.getDate() + weekOffset * 7);
   const weekEnd = new Date(weekStart);
   weekEnd.setDate(weekEnd.getDate() + 6);
 
-  const toDateValue = (date) =>
-    `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
-  const start = toDateValue(weekStart);
-  const end = toDateValue(weekEnd);
-  const sessions = plan.sessions.filter(
-    ({ scheduledFor }) => scheduledFor >= start && scheduledFor <= end,
+  return {
+    weekStart: toDateValue(weekStart),
+    weekEnd: toDateValue(weekEnd),
+  };
+}
+
+function toDateValue(date) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+}
+
+export function getLearningPlanWeekSessions(
+  plan,
+  now = new Date(),
+  weekOffset = 0,
+) {
+  const { weekStart, weekEnd } = getLearningPlanWeekRange(now, weekOffset);
+  return plan.sessions.filter(
+    ({ scheduledFor }) =>
+      scheduledFor >= weekStart && scheduledFor <= weekEnd,
   );
+}
+
+export function getLearningPlanDaySummaries(
+  plan,
+  now = new Date(),
+  weekOffset = 0,
+) {
+  const { weekStart } = getLearningPlanWeekRange(now, weekOffset);
+
+  return Array.from({ length: 7 }, (_, index) => {
+    const date = new Date(
+      Number(weekStart.slice(0, 4)),
+      Number(weekStart.slice(5, 7)) - 1,
+      Number(weekStart.slice(8, 10)) + index,
+    );
+    const dateValue = toDateValue(date);
+    const sessions = plan.sessions.filter(
+      (session) => session.scheduledFor === dateValue,
+    );
+
+    return {
+      date: dateValue,
+      sessionCount: sessions.length,
+      scheduledMinutes: sessions.reduce(
+        (total, session) => total + session.durationMinutes,
+        0,
+      ),
+      completedMinutes: sessions.reduce(
+        (total, session) =>
+          total + (session.completed ? session.durationMinutes : 0),
+        0,
+      ),
+    };
+  });
+}
+
+export function getLearningPlanWeekSummary(
+  plan,
+  now = new Date(),
+  weekOffset = 0,
+) {
+  const { weekStart, weekEnd } = getLearningPlanWeekRange(now, weekOffset);
+  const sessions = getLearningPlanWeekSessions(plan, now, weekOffset);
   const completedMinutes = sessions.reduce(
     (total, session) =>
       total + (session.completed ? session.durationMinutes : 0),
@@ -163,8 +220,8 @@ export function getLearningPlanWeekSummary(plan, now = new Date()) {
   );
 
   return {
-    weekStart: start,
-    weekEnd: end,
+    weekStart,
+    weekEnd,
     sessionCount: sessions.length,
     completedMinutes,
     weeklyGoalMinutes: plan.weeklyGoalMinutes,

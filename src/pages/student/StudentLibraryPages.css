@@ -253,6 +253,118 @@
   font-size: 0.88rem;
 }
 
+.study-plan__week-nav {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+}
+
+.study-plan__week-nav > p {
+  display: grid;
+  gap: 3px;
+  margin: 0;
+  color: #172033;
+  text-align: center;
+}
+
+.study-plan__week-nav > p span {
+  color: #64748b;
+  font-size: 0.76rem;
+}
+
+.study-plan__week-nav > button,
+.study-plan__week-nav-actions button {
+  min-height: 38px;
+  padding: 8px 11px;
+  border: 1px solid #dbeafe;
+  border-radius: 9px;
+  background: #fff;
+  color: #1d4ed8;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.study-plan__week-nav > button:first-child {
+  justify-self: start;
+}
+
+.study-plan__week-nav > button:last-child {
+  justify-self: end;
+}
+
+.study-plan__week-nav-actions {
+  display: flex;
+  justify-content: end;
+  gap: 8px;
+}
+
+.study-plan__week {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.study-plan__week article {
+  display: grid;
+  min-width: 0;
+  gap: 8px;
+  padding: 10px 8px;
+  border: 1px solid #bfdbfe;
+  border-radius: 10px;
+  background: #f8fbff;
+}
+
+.study-plan__week article.is-empty {
+  border-color: #e2e8f0;
+  background: #fff;
+}
+
+.study-plan__week h3 {
+  overflow: hidden;
+  margin: 0;
+  color: #334155;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.study-plan__day-track {
+  height: 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e2e8f0;
+}
+
+.study-plan__day-track span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: #0d9488;
+}
+
+.study-plan__week article p {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.69rem;
+  white-space: nowrap;
+}
+
+.study-plan__week article p strong {
+  color: #0f766e;
+}
+
+.study-plan__week article small {
+  overflow: hidden;
+  color: #64748b;
+  font-size: 0.65rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .study-plan__goal,
 .study-plan__form {
   display: flex;
@@ -2192,6 +2304,23 @@
   .learning-dashboard__metrics,
   .learning-dashboard__courses {
     grid-template-columns: 1fr;
+  }
+
+  .study-plan__week {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .study-plan__week-nav {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .study-plan__week-nav > p {
+    grid-column: 1 / -1;
+    grid-row: 1;
+  }
+
+  .study-plan__week-nav-actions {
+    flex-wrap: wrap;
   }
 
   .cart-layout {

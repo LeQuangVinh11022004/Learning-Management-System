@@ -9,7 +9,7 @@ function StudyPlanSessionList({ sessions, onToggle, onRemove }) {
   if (sessions.length === 0) {
     return (
       <p className="study-plan__empty">
-        Chưa có phiên học nào. Thêm một phiên để bắt đầu kế hoạch tuần này.
+        Tuần này chưa có phiên học. Thêm một phiên để cập nhật kế hoạch.
       </p>
     );
   }

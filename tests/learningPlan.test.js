@@ -3,6 +3,9 @@ import assert from "node:assert/strict";
 import {
   addLearningPlanSession,
   DEFAULT_WEEKLY_GOAL_MINUTES,
+  getLearningPlanDaySummaries,
+  getLearningPlanWeekRange,
+  getLearningPlanWeekSessions,
   getLearningPlanWeekSummary,
   loadLearningPlan,
   removeLearningPlanSession,
@@ -108,6 +111,62 @@ test("caps progress at the goal and reports no remaining minutes after exceeding
 
   assert.equal(summary.progressPercent, 100);
   assert.equal(summary.remainingMinutes, 0);
+});
+
+test("navigates week ranges across month and year boundaries", () => {
+  const now = new Date(2026, 11, 31, 12);
+
+  assert.deepEqual(getLearningPlanWeekRange(now, -1), {
+    weekStart: "2026-12-21",
+    weekEnd: "2026-12-27",
+  });
+  assert.deepEqual(getLearningPlanWeekRange(now), {
+    weekStart: "2026-12-28",
+    weekEnd: "2027-01-03",
+  });
+  assert.deepEqual(getLearningPlanWeekRange(now, 1), {
+    weekStart: "2027-01-04",
+    weekEnd: "2027-01-10",
+  });
+});
+
+test("filters selected-week sessions and summarizes each day", () => {
+  const plan = {
+    weeklyGoalMinutes: 120,
+    sessions: [
+      createSession({ scheduledFor: "2026-11-23", completed: true }),
+      createSession({
+        id: "session-2",
+        scheduledFor: "2026-11-23",
+        durationMinutes: 30,
+        completed: false,
+      }),
+      createSession({
+        id: "session-3",
+        scheduledFor: "2026-11-30",
+        durationMinutes: 60,
+        completed: true,
+      }),
+    ],
+  };
+  const now = new Date(2026, 10, 26, 12);
+  const sessions = getLearningPlanWeekSessions(plan, now);
+  const days = getLearningPlanDaySummaries(plan, now);
+
+  assert.deepEqual(sessions.map(({ id }) => id), ["session-1", "session-2"]);
+  assert.equal(days.length, 7);
+  assert.deepEqual(days[0], {
+    date: "2026-11-23",
+    sessionCount: 2,
+    scheduledMinutes: 75,
+    completedMinutes: 45,
+  });
+  assert.deepEqual(days[6], {
+    date: "2026-11-29",
+    sessionCount: 0,
+    scheduledMinutes: 0,
+    completedMinutes: 0,
+  });
 });
 
 test("rejects malformed plans, sessions, and unknown session updates", () => {
