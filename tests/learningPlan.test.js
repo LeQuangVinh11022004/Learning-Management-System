@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import {
   addLearningPlanSession,
   DEFAULT_WEEKLY_GOAL_MINUTES,
+  filterLearningPlanSessions,
   getLearningPlanDaySummaries,
   getLearningPlanWeekRange,
   getLearningPlanWeekSessions,
@@ -61,6 +62,73 @@ test("stores goals and sessions, and supports completion and removal", () => {
   assert.deepEqual(
     removeLearningPlanSession(storage, "student-1", "session-1"),
     { weeklyGoalMinutes: 240, sessions: [] },
+  );
+});
+
+test("edits session details while keeping session identity and completion", () => {
+  const storage = createStorage();
+  addLearningPlanSession(
+    storage,
+    "student-1",
+    createSession({ completed: true }),
+  );
+
+  const plan = updateLearningPlanSession(storage, "student-1", "session-1", {
+    courseId: "course-2",
+    courseTitle: "Lập trình nâng cao",
+    scheduledFor: "2026-11-24",
+    durationMinutes: 60,
+  });
+
+  assert.deepEqual(plan.sessions[0], {
+    id: "session-1",
+    courseId: "course-2",
+    courseTitle: "Lập trình nâng cao",
+    scheduledFor: "2026-11-24",
+    durationMinutes: 60,
+    completed: true,
+  });
+});
+
+test("filters weekly sessions by status and Vietnamese course search", () => {
+  const sessions = [
+    createSession({
+      courseTitle: "Lập trình JavaScript",
+      scheduledFor: "2026-11-25",
+    }),
+    createSession({
+      id: "overdue",
+      courseTitle: "Lập trình Python",
+      scheduledFor: "2026-11-20",
+    }),
+    createSession({
+      id: "done",
+      courseTitle: "Thiết kế giao diện",
+      scheduledFor: "2026-11-20",
+      completed: true,
+    }),
+  ];
+  const now = new Date(2026, 10, 23, 12);
+
+  assert.deepEqual(
+    filterLearningPlanSessions(sessions, { status: "upcoming", now }).map(
+      ({ id }) => id,
+    ),
+    ["session-1"],
+  );
+  assert.deepEqual(
+    filterLearningPlanSessions(sessions, {
+      status: "overdue",
+      search: "LẬP TRÌNH",
+      now,
+    }).map(({ id }) => id),
+    ["overdue"],
+  );
+  assert.deepEqual(
+    filterLearningPlanSessions(sessions, { status: "completed", now }).map(
+      ({ id }) => id,
+    ),
+    ["done"],
   );
 });
 
@@ -190,6 +258,13 @@ test("rejects malformed plans, sessions, and unknown session updates", () => {
       completed: true,
     }),
     /Không tìm thấy/,
+  );
+  addLearningPlanSession(storage, "student-1", createSession());
+  assert.throws(
+    () => updateLearningPlanSession(storage, "student-1", "session-1", {
+      scheduledFor: "2026-02-30",
+    }),
+    /không hợp lệ/,
   );
   assert.throws(
     () => removeLearningPlanSession(storage, "student-1", "missing"),

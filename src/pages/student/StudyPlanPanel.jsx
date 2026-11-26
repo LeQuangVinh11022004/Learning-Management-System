@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   addLearningPlanSession,
+  filterLearningPlanSessions,
   getLearningPlanDaySummaries,
   getLearningPlanWeekSessions,
   getLearningPlanWeekSummary,
@@ -11,6 +12,7 @@ import {
 } from "../../utils/learningPlan.js";
 import { getApiErrorMessage } from "../../utils/getApiErrorMessage.js";
 import StudyPlanSessionForm from "./StudyPlanSessionForm.jsx";
+import StudyPlanSessionFilters from "./StudyPlanSessionFilters.jsx";
 import StudyPlanSessionList from "./StudyPlanSessionList.jsx";
 import StudyPlanWeekCalendar from "./StudyPlanWeekCalendar.jsx";
 import StudyPlanWeekNavigation from "./StudyPlanWeekNavigation.jsx";
@@ -22,6 +24,8 @@ function StudyPlanPanel({ userId, courses }) {
   const [goalInput, setGoalInput] = useState("");
   const [reloadCount, setReloadCount] = useState(0);
   const [weekOffset, setWeekOffset] = useState(0);
+  const [sessionStatus, setSessionStatus] = useState("all");
+  const [sessionSearch, setSessionSearch] = useState("");
 
   useEffect(() => {
     if (!userId) return;
@@ -49,6 +53,14 @@ function StudyPlanPanel({ userId, courses }) {
   const weekSessions = useMemo(
     () => (plan ? getLearningPlanWeekSessions(plan, new Date(), weekOffset) : []),
     [plan, weekOffset],
+  );
+  const visibleSessions = useMemo(
+    () =>
+      filterLearningPlanSessions(weekSessions, {
+        status: sessionStatus,
+        search: sessionSearch,
+      }),
+    [sessionSearch, sessionStatus, weekSessions],
   );
   const daySummaries = useMemo(
     () => (plan ? getLearningPlanDaySummaries(plan, new Date(), weekOffset) : []),
@@ -89,8 +101,14 @@ function StudyPlanPanel({ userId, courses }) {
   }
 
   function toggleSession(sessionId, completed) {
-    saveUpdatedPlan((storage, id) =>
+    return saveUpdatedPlan((storage, id) =>
       updateLearningPlanSession(storage, id, sessionId, { completed }),
+    );
+  }
+
+  function updateSession(sessionId, updates) {
+    return saveUpdatedPlan((storage, id) =>
+      updateLearningPlanSession(storage, id, sessionId, updates),
     );
   }
 
@@ -182,10 +200,20 @@ function StudyPlanPanel({ userId, courses }) {
             key={weekOffset}
             onAdd={addSession}
           />
+          <StudyPlanSessionFilters
+            onSearchChange={setSessionSearch}
+            onStatusChange={setSessionStatus}
+            search={sessionSearch}
+            sessions={weekSessions}
+            status={sessionStatus}
+          />
           <StudyPlanSessionList
+            courses={courses}
             onRemove={removeSession}
             onToggle={toggleSession}
-            sessions={weekSessions}
+            onUpdate={updateSession}
+            sessions={visibleSessions}
+            totalCount={weekSessions.length}
           />
         </>
       )}

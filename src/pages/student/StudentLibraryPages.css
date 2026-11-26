@@ -466,14 +466,111 @@
   text-decoration: line-through;
 }
 
-.study-plan__sessions li > button {
+.study-plan__sessions li.is-overdue {
+  border-color: #fecaca;
+  background: #fffafa;
+}
+
+.study-plan__sessions li.is-overdue small {
+  color: #b91c1c;
+}
+
+.study-plan__session-actions {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 12px;
+}
+
+.study-plan__session-actions button {
   border: 0;
   background: transparent;
-  color: #b91c1c;
   cursor: pointer;
   font: inherit;
   font-size: 0.82rem;
   font-weight: 700;
+}
+
+.study-plan__session-actions button:first-child {
+  color: #1d4ed8;
+}
+
+.study-plan__session-actions button:last-child {
+  color: #b91c1c;
+}
+
+.study-plan__session-filters {
+  display: grid;
+  gap: 12px;
+}
+
+.study-plan__session-filters > label {
+  display: block;
+  max-width: 460px;
+}
+
+.study-plan__session-filters input,
+.study-plan__edit-form input,
+.study-plan__edit-form select {
+  width: 100%;
+  min-height: 42px;
+  padding: 9px 11px;
+  border: 1px solid #cbd5e1;
+  border-radius: 9px;
+  background: #fff;
+  color: #172033;
+  font: inherit;
+}
+
+.study-plan__session-filters .enrollment-filters {
+  margin-bottom: 0;
+  gap: 8px;
+}
+
+.study-plan__session-filters .enrollment-filters button {
+  min-height: 36px;
+  padding: 0 10px;
+  font-size: 0.8rem;
+}
+
+.study-plan__edit-form {
+  display: grid;
+  width: 100%;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: end;
+  gap: 10px;
+}
+
+.study-plan__edit-form label {
+  display: grid;
+  gap: 5px;
+  color: #475569;
+  font-size: 0.76rem;
+  font-weight: 600;
+}
+
+.study-plan__edit-form > div {
+  display: flex;
+  grid-column: 1 / -1;
+  gap: 8px;
+}
+
+.study-plan__edit-form button {
+  min-height: 36px;
+  padding: 7px 11px;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.study-plan__edit-form button:last-child {
+  border-color: #e2e8f0;
+  background: #fff;
+  color: #475569;
 }
 
 .study-plan__empty {
@@ -2321,6 +2418,23 @@
 
   .study-plan__week-nav-actions {
     flex-wrap: wrap;
+  }
+
+  .study-plan__edit-form {
+    grid-template-columns: 1fr;
+  }
+
+  .study-plan__edit-form > div {
+    grid-column: auto;
+  }
+
+  .study-plan__sessions li {
+    align-items: start;
+  }
+
+  .study-plan__session-actions {
+    flex-direction: column;
+    gap: 6px;
   }
 
   .cart-layout {

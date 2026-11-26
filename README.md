@@ -38,8 +38,8 @@ The production application is hosted on Vercel:
   progress dashboard for enrolled courses with course search and status filters
   that persist in shareable URLs and are preserved when returning from a lesson.
   Learners can also set weekly study-minute goals, review a day-by-day study
-  calendar, and navigate past or future scheduled sessions locally on their
-  dashboard.
+  calendar, navigate past or future scheduled sessions, edit planned sessions,
+  and filter upcoming, overdue, or completed work locally on their dashboard.
 - Student profile viewing and editing.
 
 ## Technology

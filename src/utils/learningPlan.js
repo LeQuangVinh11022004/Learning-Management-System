@@ -2,6 +2,12 @@ export const DEFAULT_WEEKLY_GOAL_MINUTES = 300;
 
 const MAX_WEEKLY_GOAL_MINUTES = 10080;
 const MAX_SESSION_MINUTES = 1440;
+export const LEARNING_PLAN_SESSION_FILTERS = [
+  "all",
+  "upcoming",
+  "overdue",
+  "completed",
+];
 
 function getStorageKey(userId) {
   if (!userId) {
@@ -109,7 +115,21 @@ export function updateLearningPlanSession(
   sessionId,
   updates,
 ) {
-  if (!sessionId || typeof updates?.completed !== "boolean") {
+  const allowedFields = new Set([
+    "courseId",
+    "courseTitle",
+    "scheduledFor",
+    "durationMinutes",
+    "completed",
+  ]);
+  if (
+    !sessionId ||
+    !updates ||
+    typeof updates !== "object" ||
+    Array.isArray(updates) ||
+    Object.keys(updates).length === 0 ||
+    Object.keys(updates).some((key) => !allowedFields.has(key))
+  ) {
     throw new Error("Thông tin cập nhật phiên học không hợp lệ.");
   }
 
@@ -119,13 +139,18 @@ export function updateLearningPlanSession(
     throw new Error("Không tìm thấy phiên học cần cập nhật.");
   }
 
+  const updatedSessions = plan.sessions.map((session) =>
+    session.id === sessionId
+      ? { ...session, ...updates }
+      : session,
+  );
+  if (!updatedSessions.every(validateSession)) {
+    throw new Error("Thông tin cập nhật phiên học không hợp lệ.");
+  }
+
   return saveLearningPlan(storage, userId, {
     ...plan,
-    sessions: plan.sessions.map((session) =>
-      session.id === sessionId
-        ? { ...session, completed: updates.completed }
-        : session,
-    ),
+    sessions: updatedSessions,
   });
 }
 
@@ -170,6 +195,36 @@ export function getLearningPlanWeekSessions(
     ({ scheduledFor }) =>
       scheduledFor >= weekStart && scheduledFor <= weekEnd,
   );
+}
+
+export function filterLearningPlanSessions(
+  sessions,
+  { status = "all", search = "", now = new Date() } = {},
+) {
+  const selectedStatus = LEARNING_PLAN_SESSION_FILTERS.includes(status)
+    ? status
+    : "all";
+  const query = search.trim().toLocaleLowerCase("vi");
+  const today = toDateValue(
+    new Date(now.getFullYear(), now.getMonth(), now.getDate()),
+  );
+
+  return sessions.filter((session) => {
+    const matchesStatus =
+      selectedStatus === "all" ||
+      (selectedStatus === "completed" && session.completed) ||
+      (selectedStatus === "upcoming" &&
+        !session.completed &&
+        session.scheduledFor >= today) ||
+      (selectedStatus === "overdue" &&
+        !session.completed &&
+        session.scheduledFor < today);
+    const matchesSearch = session.courseTitle
+      .toLocaleLowerCase("vi")
+      .includes(query);
+
+    return matchesStatus && matchesSearch;
+  });
 }
 
 export function getLearningPlanDaySummaries(
