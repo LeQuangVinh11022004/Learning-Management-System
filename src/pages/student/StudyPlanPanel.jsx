@@ -14,6 +14,7 @@ import { getApiErrorMessage } from "../../utils/getApiErrorMessage.js";
 import StudyPlanSessionForm from "./StudyPlanSessionForm.jsx";
 import StudyPlanSessionFilters from "./StudyPlanSessionFilters.jsx";
 import StudyPlanSessionList from "./StudyPlanSessionList.jsx";
+import StudyPlanCalendarExport from "./StudyPlanCalendarExport.jsx";
 import StudyPlanWeekCalendar from "./StudyPlanWeekCalendar.jsx";
 import StudyPlanWeekNavigation from "./StudyPlanWeekNavigation.jsx";
 
@@ -178,6 +179,7 @@ function StudyPlanPanel({ userId, courses }) {
             days={daySummaries}
             weeklyGoalMinutes={summary.weeklyGoalMinutes}
           />
+          <StudyPlanCalendarExport plan={plan} />
 
           <form className="study-plan__goal" onSubmit={saveGoal}>
             <label>

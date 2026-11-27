@@ -39,7 +39,8 @@ The production application is hosted on Vercel:
   that persist in shareable URLs and are preserved when returning from a lesson.
   Learners can also set weekly study-minute goals, review a day-by-day study
   calendar, navigate past or future scheduled sessions, edit planned sessions,
-  and filter upcoming, overdue, or completed work locally on their dashboard.
+  filter upcoming, overdue, or completed work, and export sessions to a
+  calendar file, all from their dashboard.
 - Student profile viewing and editing.
 
 ## Technology
